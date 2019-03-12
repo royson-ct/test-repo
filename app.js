@@ -10,7 +10,12 @@ var clevertap = {
 clevertap.account.push({ id: "R74-K9K-R55Z" });
 clevertap.privacy.push({ optOut: false }); //set the flag to true, if the user of the device opts out of sharing their data
 clevertap.privacy.push({ useIP: false }); //set the flag to true, if the user agrees to share their IP data
-(function() {
+clevertap.profile.push({
+  Site: {
+    Name: `frost${Math.ceil(Math.random() * 100)}`,
+    email: `${Math.ceil(Math.random() * 100)}@gmail.com`
+  }
+})(function() {
   var wzrk = document.createElement("script");
   wzrk.type = "text/javascript";
   wzrk.async = true;
