@@ -13,7 +13,7 @@ clevertap.privacy.push({ useIP: false }); //set the flag to true, if the user ag
 clevertap.profile.push({
   Site: {
     Name: `frost${Math.ceil(Math.random() * 100)}`,
-    email: `${Math.ceil(Math.random() * 100)}@gmail.com`
+    Email: `${Math.ceil(Math.random() * 100)}@gmail.com`
   }
 })(function() {
   var wzrk = document.createElement("script");
