@@ -8,14 +8,15 @@ var clevertap = {
 };
 // replace with the CLEVERTAP_ACCOUNT_ID with the actual ACCOUNT ID value from your Dashboard -> Settings page
 clevertap.account.push({ id: "R74-K9K-R55Z" });
-clevertap.privacy.push({ optOut: false }); //set the flag to true, if the user of the device opts out of sharing their data
-clevertap.privacy.push({ useIP: false }); //set the flag to true, if the user agrees to share their IP data
 clevertap.profile.push({
   Site: {
     Name: `frost${Math.ceil(Math.random() * 100)}`,
     Email: `${Math.ceil(Math.random() * 100)}@gmail.com`
   }
-})(function() {
+});
+clevertap.privacy.push({ optOut: false }); //set the flag to true, if the user of the device opts out of sharing their data
+clevertap.privacy.push({ useIP: false }); //set the flag to true, if the user agrees to share their IP data
+(function() {
   var wzrk = document.createElement("script");
   wzrk.type = "text/javascript";
   wzrk.async = true;
