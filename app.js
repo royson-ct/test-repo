@@ -17,6 +17,7 @@ clevertap.profile.push({
 clevertap.privacy.push({ optOut: false }); //set the flag to true, if the user of the device opts out of sharing their data
 clevertap.privacy.push({ useIP: false }); //set the flag to true, if the user agrees to share their IP data
 (function() {
+  console.log(clevertap);
   var wzrk = document.createElement("script");
   wzrk.type = "text/javascript";
   wzrk.async = true;
