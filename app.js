@@ -7,8 +7,8 @@ var clevertap = {
     privacy: []
 };
 // replace with the CLEVERTAP_ACCOUNT_ID with the actual ACCOUNT ID value from your Dashboard -> Settings page
-// clevertap.account.push({ id: "R74-K9K-R55Z" });
-clevertap.account.push({id: "WWW-WWW-WWRZ"});
+ clevertap.account.push({ id: "R74-K9K-R55Z" });
+//clevertap.account.push({id: "WWW-WWW-WWRZ"});
 // clevertap.onUserLogin.push({
 //     Site: {
 //         // Email: `${Math.ceil(Math.random() * 100)}@gmail.com`
