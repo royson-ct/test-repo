@@ -1,16 +1,49 @@
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Frost Github Page</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="app.js"></script>
-  </head>
-  <body>
-    <h1>Frost's Page</h1>
-    <div>
-      <button onclick="onClick()"></button>
-    </div>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Test A.JS On User Login</title>
+        <script src="app.js"></script>
+        <script src="a.js"></script>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h1>Test A-JS</h1>
+        <button onclick="onClickPP()">Random PP</button>
+        <button onclick="onClickOUL()">Random OUL</button>
+        <button onclick="onClickEP()">Event Push</button>
+        <hr />
+        <br />
+        <p>On User Login</p>
+        <input type="text" id="constantOUL" class="textInput" /><input type="text" disabled value="@gmail.com" class="textInput">
+        <button onclick="onClickOULSame()" class="inputBtn">OUL</button>
+        <br>
+        <hr>
+        <p>Profile Push</p>
+        <input type="text" id="constantPP" class="textInput" /><input type="text" disabled value="@gmail.com" class="textInput">
+        <button onclick="onClickPPSame()" class="inputBtn">PP</button>
+        <hr />
+        <input type="checkbox" name="event" value="adc" id="adc" /> Added to
+        Cart <br />
+        <input type="checkbox" name="event" value="ps" id="ps" /> Product Sold
+        <br />
+        <input type="checkbox" name="event" value="pv" id="pv" /> Product Viewed
+        <br />
+        <button id="eventPushSelect" onclick="pushSelectedEvents()">
+            Push Selected Events
+        </button>
+
+        <br>
+        <hr>
+        <button onclick="getLS()" style="background: #2b39ff;color: white; padding: 5px">Show Local Storage</button>
+        <br><br>
+        <button onclick="clearLS()" style="background: red;color: white; padding: 5px">Clear Local Storage</button>
+        <br />
+        <br />
+        <br />
+        <hr />
+
+        <div id="lsData"></div>
+    </body>
 </html>
