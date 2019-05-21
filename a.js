@@ -1002,6 +1002,7 @@ function __wizrocket() {
                 if (guidFromLRUCache) {
                     if (wiz.isValueValid(guidFromLRUCache)) {
                         LRU_CACHE.set(guidFromLRUCache, temp_k[0]);
+                        gcookie = guidFromLRUCache;
                     }
                 } else {
                     var guidFromLSorCookie = wiz.readFromLSorCookie(
