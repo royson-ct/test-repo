@@ -1,10 +1,10 @@
 function __wizrocket() {
-    var targetDomain = "wzrkt.com";
-  // var targetDomain = "localhost:3838";
+
+
+    var targetDomain = 'localhost:3838';
     //targetDomain = 'localhost:6061/lc'; //ALWAYS comment this line before deploying
 
-  //var wz_pr = "http:";
-    var wz_pr = "https:";
+    var wz_pr = "http:";
 
     var dataPostURL, recorderURL, emailURL;
     var wiz = this;
@@ -13,148 +13,127 @@ function __wizrocket() {
     var domain = window.location.hostname;
     var broadDomain;
     var wc = window.console;
-    var requestTime = 0,
-        seqNo = 0;
+    var requestTime = 0, seqNo = 0;
     var wzrk_error = {}; //to trap input errors
     var wiz_counter = 0; // to keep track of number of times we load the body
     var globalCache = {};
     // to be used for checking whether the script loaded fine and the wiz.init function was called
-    var onloadcalled = 0; // 1 = fired
+    var onloadcalled = 0;  // 1 = fired
     var processingBackup = false;
 
     var gcookie, scookieObj;
     var accountId, region;
     var campaignDivMap = {};
-    var blockRequeust = false,
-        clearCookie = false;
+    var blockRequeust = false, clearCookie = false;
     var SCOOKIE_NAME, globalChargedId;
     var globalEventsMap, globalProfileMap, currentSessionId;
     var storageDelim = "|$|";
     var staleEvtMaxTime = 20 * 60; //20 mins
     var COOKIE_EXPIRY = 86400 * 365 * 10; //10 years in seconds. Seconds in an days * days in an year * number of years
-    var LRU_CACHE,
-        LRU_CACHE_SIZE = 6;
 
     var STRING_CONSTANTS = {
-        CLEAR: "clear",
-        CHARGED_ID: "Charged ID",
-        CHARGEDID_COOKIE_NAME: "WZRK_CHARGED_ID",
-        GCOOKIE_NAME: "WZRK_G",
-        KCOOKIE_NAME: "WZRK_K",
-        CAMP_COOKIE_NAME: "WZRK_CAMP",
-        SCOOKIE_PREFIX: "WZRK_S",
-        EV_COOKIE: "WZRK_EV",
-        META_COOKIE: "WZRK_META",
-        PR_COOKIE: "WZRK_PR",
-        ARP_COOKIE: "WZRK_ARP",
-        LCOOKIE_NAME: "WZRK_L",
-        NOTIF_COOKIE_NAME: "WZRK_N",
-        GLOBAL: "global",
-        TOTAL_COUNT: "tc",
-        DISPLAY: "display",
-        UNDEFINED: "undefined",
-        WEBPUSH_LS_KEY: "WZRK_WPR",
-        OPTOUT_KEY: "optOut",
-        CT_OPTOUT_KEY: "ct_optout",
-        OPTOUT_COOKIE_ENDSWITH: ":OO",
-        USEIP_KEY: "useIP",
-        LRU_CACHE: "LRU_CACHE"
+        CLEAR: 'clear',
+        CHARGED_ID: 'Charged ID',
+        CHARGEDID_COOKIE_NAME: 'WZRK_CHARGED_ID',
+        GCOOKIE_NAME: 'WZRK_G',
+        KCOOKIE_NAME: 'WZRK_K',
+        CAMP_COOKIE_NAME: 'WZRK_CAMP',
+        SCOOKIE_PREFIX: 'WZRK_S',
+        EV_COOKIE: 'WZRK_EV',
+        META_COOKIE: 'WZRK_META',
+        PR_COOKIE: 'WZRK_PR',
+        ARP_COOKIE: 'WZRK_ARP',
+        LCOOKIE_NAME: 'WZRK_L',
+        NOTIF_COOKIE_NAME: 'WZRK_N',
+        GLOBAL: 'global',
+        TOTAL_COUNT: 'tc',
+        DISPLAY: 'display',
+        UNDEFINED: 'undefined',
+        WEBPUSH_LS_KEY: 'WZRK_WPR',
+        OPTOUT_KEY: 'optOut',
+        CT_OPTOUT_KEY: 'ct_optout',
+        OPTOUT_COOKIE_ENDSWITH: ':OO',
+        USEIP_KEY: 'useIP'
     };
 
     // path to reference the JS for our dialog
-    var wizAlertJSPath =
-        "https://d2r1yp2w7bby2u.cloudfront.net/js/wzrk_dialog.min.js";
+    var wizAlertJSPath = 'https://d2r1yp2w7bby2u.cloudfront.net/js/wzrk_dialog.min.js';
 
     var FIRST_PING_FREQ_IN_MILLIS = 2 * 60 * 1000; // 2 mins
     var CONTINUOUS_PING_FREQ_IN_MILLIS = 5 * 60 * 1000; // 5 mins
 
     var TWENTY_MINS = 20 * 60 * 1000;
 
-    var SCOOKIE_EXP_TIME_IN_SECS = 60 * 20; // 20 mins
+    var SCOOKIE_EXP_TIME_IN_SECS = 60 * 20;  // 20 mins
 
-    var EVT_PING = "ping",
-        EVT_PUSH = "push";
 
-    var wizrocket = window["wizrocket"];
+    var EVT_PING = "ping", EVT_PUSH = "push";
+
+    var wizrocket = window['wizrocket'];
 
     var REQ_N = 0;
     var RESP_N = 0;
 
     if (typeof clevertap != STRING_CONSTANTS.UNDEFINED) {
         wizrocket = clevertap;
-        window["wizrocket"] = clevertap;
+        window['wizrocket'] = clevertap;
     } else {
-        window["clevertap"] = wizrocket;
+        window['clevertap'] = wizrocket;
     }
 
     var webPushEnabled; // gets set to true on page request, when chrome notifs have been integrated completely
 
     wiz.is_onloadcalled = function () {
-        return onloadcalled === 1;
+        return (onloadcalled === 1);
     };
 
     // use these to add and remove sweet alert dialogs as necessary
     wiz.addWizAlertJS = function () {
-        var scriptTag = doc.createElement("script");
-        scriptTag.setAttribute("type", "text/javascript");
-        scriptTag.setAttribute("id", "wzrk-alert-js");
-        scriptTag.setAttribute("src", wizAlertJSPath);
+        var scriptTag = doc.createElement('script');
+        scriptTag.setAttribute('type', 'text/javascript');
+        scriptTag.setAttribute('id', 'wzrk-alert-js');
+        scriptTag.setAttribute('src', wizAlertJSPath);
 
         // add the script tag to the end of the body
-        document.getElementsByTagName("body")[0].appendChild(scriptTag);
+        document.getElementsByTagName('body')[0].appendChild(scriptTag);
 
         return scriptTag;
     };
 
     wiz.removeWizAlertJS = function () {
-        var scriptTag = doc.getElementById("wzrk-alert-js");
+        var scriptTag = doc.getElementById('wzrk-alert-js');
         scriptTag.parentNode.removeChild(scriptTag);
     };
+
 
     wiz.enableWebPush = function (enabled) {
         webPushEnabled = enabled;
         if (webPushEnabled && notifApi.notifEnabledFromApi) {
             wiz.handleNotificationRegistration(notifApi.displayArgs);
         } else if (!webPushEnabled && notifApi.notifEnabledFromApi) {
-            wc.e(
-                "Ensure that web push notifications are fully enabled and integrated before requesting them"
-            );
+            wc.e('Ensure that web push notifications are fully enabled and integrated before requesting them');
         }
     };
 
     /**
      * Sets up a service worker for chrome push notifications and sends the data to LC
      */
-    wiz.setUpChromeNotifications = function (
-        subscriptionCallback,
-        serviceWorkerPath
-    ) {
-        if ("serviceWorker" in navigator) {
-            navigator["serviceWorker"]
-                ["register"](serviceWorkerPath)
-                ["then"](function () {
-                return navigator["serviceWorker"]["ready"];
-            })
-                ["then"](function (serviceWorkerRegistration) {
-                serviceWorkerRegistration["pushManager"]
-                    ["subscribe"]({userVisibleOnly: true})
-                    ["then"](function (subscription) {
-                    wc.l(
-                        "Service Worker registered. Endpoint: " +
-                        subscription["endpoint"]
-                    );
+    wiz.setUpChromeNotifications = function (subscriptionCallback, serviceWorkerPath) {
+
+
+        if ('serviceWorker' in navigator) {
+            navigator["serviceWorker"]['register'](serviceWorkerPath)['then'](function () {
+                return navigator['serviceWorker']['ready'];
+            })['then'](function (serviceWorkerRegistration) {
+                serviceWorkerRegistration['pushManager']['subscribe']({'userVisibleOnly': true})
+                    ['then'](function (subscription) {
+                    wc.l('Service Worker registered. Endpoint: ' + subscription['endpoint']);
 
                     // convert the subscription keys to strings; this sets it up nicely for pushing to LC
-                    var subscriptionData = JSON.parse(
-                        JSON.stringify(subscription)
-                    );
+                    var subscriptionData = JSON.parse(JSON.stringify(subscription));
 
                     // remove the common chrome endpoint at the beginning of the token
-                    subscriptionData["endpoint"] = subscriptionData[
-                        "endpoint"
-                        ]
-                        .split("/")
-                        .pop();
+                    subscriptionData['endpoint'] = subscriptionData['endpoint'].split('/').pop();
 
                     var sessionObj = wiz.getSessionCookieObject();
                     // var shouldSendToken = typeof sessionObj['p'] === STRING_CONSTANTS.UNDEFINED || sessionObj['p'] === 1
@@ -162,116 +141,40 @@ function __wizrocket() {
                     var shouldSendToken = true;
                     if (shouldSendToken) {
                         var payload = subscriptionData;
-                        payload = wiz.addSystemDataToObject(
-                            payload,
-                            true
-                        );
+                        payload = wiz.addSystemDataToObject(payload, true);
                         payload = JSON.stringify(payload);
                         var pageLoadUrl = dataPostURL;
-                        pageLoadUrl = wiz.addToURL(
-                            pageLoadUrl,
-                            "type",
-                            "data"
-                        );
-                        pageLoadUrl = wiz.addToURL(
-                            pageLoadUrl,
-                            "d",
-                            wiz.compressData(payload)
-                        );
+                        pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", "data");
+                        pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", wiz.compressData(payload));
                         wiz.fireRequest(pageLoadUrl);
                         //set in localstorage
                         if (wzrk_util.isLocalStorageSupported()) {
-                            localStorage.setItem(
-                                STRING_CONSTANTS.WEBPUSH_LS_KEY,
-                                "ok"
-                            );
+                            localStorage.setItem(STRING_CONSTANTS.WEBPUSH_LS_KEY, 'ok');
                         }
                     }
 
-                    if (
-                        typeof subscriptionCallback !== "undefined" &&
-                        typeof subscriptionCallback === "function"
-                    ) {
+                    if (typeof subscriptionCallback !== "undefined" && typeof subscriptionCallback === "function") {
                         subscriptionCallback();
                     }
-                })
-                    ["catch"](function (error) {
-                    wc.l("Error subscribing: " + error);
+                })['catch'](function (error) {
+                    wc.l('Error subscribing: ' + error);
                     //unsubscribe from webpush if error
-                    serviceWorkerRegistration["pushManager"]
-                        ["getSubscription"]()
-                        ["then"](function (subscription) {
+                    serviceWorkerRegistration['pushManager']['getSubscription']()['then'](function (subscription) {
                         if (subscription !== null) {
-                            subscription["unsubscribe"]()
-                                ["then"](function (successful) {
+                            subscription['unsubscribe']()['then'](function (successful) {
                                 // You've successfully unsubscribed
-                                wc.l(
-                                    "Unsubscription successful"
-                                );
-                            })
-                                ["catch"](function (e) {
+                                wc.l('Unsubscription successful');
+                            })['catch'](function (e) {
                                 // Unsubscription failed
-                                wc.l(
-                                    "Error unsubscribing: " + e
-                                );
-                            });
+                                wc.l('Error unsubscribing: ' + e)
+                            })
                         }
-                    });
+                    })
                 });
-            })
-                ["catch"](function (err) {
-                wc.l("error registering service worker: " + err);
+            })['catch'](function (err) {
+                wc.l('error registering service worker: ' + err);
             });
         }
-    };
-
-    // TODO: Push unregister token event for given guid.
-    wiz.unregisterTokenForGuid = function (givenGUID) {
-        var unregisterEventUrl = dataPostURL;
-        var data = {};
-        data["type"] = "data";
-        if (wiz.isValueValid(givenGUID)) {
-            data["g"] = givenGUID;
-        }
-        data["action"] = "register";
-        data["id"] = accountId;
-        data["endpoint"] = "myGCMID";
-
-        var obj = wiz.getSessionCookieObject();
-
-        data["s"] = obj["s"]; //Session cookie
-
-        var compressedData = wiz.compressData(JSON.stringify(data));
-
-        var pageLoadUrl = dataPostURL;
-        pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", "data");
-        pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
-
-        // wiz.fireRequest(pageLoadUrl);
-
-        if (wiz.isValueValid(givenGUID)) {
-            //add cookie to url
-            pageLoadUrl = wiz.addToURL(pageLoadUrl, "gc", givenGUID);
-        }
-        // url = wiz.addARPToRequest(url);
-        // url = addUseIPToRequest(url);
-        pageLoadUrl = wiz.addToURL(pageLoadUrl, "r", new Date().getTime()); // add epoch to beat caching of the URL
-        if (wizrocket.hasOwnProperty("plugin")) {
-            //used to add plugin name in request parameter
-            var plugin = wizrocket["plugin"];
-            pageLoadUrl = wiz.addToURL(pageLoadUrl, "ct_pl", plugin);
-        }
-        if (pageLoadUrl.indexOf("chrome-extension:") != -1) {
-            pageLoadUrl = pageLoadUrl.replace("chrome-extension:", "https:");
-        }
-        var s = doc.createElement("script");
-        s.setAttribute("type", "text/javascript");
-        s.setAttribute("src", pageLoadUrl);
-        s.setAttribute("rel", "nofollow");
-        s.async = true;
-
-        doc.getElementsByTagName("head")[0].appendChild(s);
-        wc.d("req snt -> url: " + pageLoadUrl);
     };
 
     wiz.getCleverTapID = function () {
@@ -279,6 +182,8 @@ function __wizrocket() {
     };
 
     wiz.init = function () {
+
+
         wc = {
             e: function (msg) {
                 if (window.console) {
@@ -304,37 +209,35 @@ function __wizrocket() {
         wiz.deleteCookie("WZRK_P", window.location.hostname);
         wiz.g(); // load cookies on pageload; this HAS to be the first thing in this method
 
-        if (typeof wizrocket["account"][0] == STRING_CONSTANTS.UNDEFINED) {
-            wc.e(wzrk_msg["embed-error"]);
+
+
+
+        if (typeof wizrocket['account'][0] == STRING_CONSTANTS.UNDEFINED) {
+            wc.e(wzrk_msg['embed-error']);
             return;
         } else {
-            accountId = wizrocket["account"][0]["id"];
+            accountId = wizrocket['account'][0]['id'];
 
-            if (
-                typeof accountId == STRING_CONSTANTS.UNDEFINED ||
-                accountId == ""
-            ) {
-                wc.e(wzrk_msg["embed-error"]);
+            if (typeof accountId == STRING_CONSTANTS.UNDEFINED || accountId == '') {
+                wc.e(wzrk_msg['embed-error']);
                 return;
             }
-            SCOOKIE_NAME = STRING_CONSTANTS.SCOOKIE_PREFIX + "_" + accountId;
+            SCOOKIE_NAME = STRING_CONSTANTS.SCOOKIE_PREFIX + '_' + accountId;
+
         }
-        if (typeof wizrocket["region"] != STRING_CONSTANTS.UNDEFINED) {
-            region = wizrocket["region"];
-            targetDomain = region + "." + targetDomain;
+        if (typeof wizrocket['region'] != STRING_CONSTANTS.UNDEFINED) {
+            region = wizrocket['region'];
+            targetDomain = region + '.' + targetDomain;
         }
 
-        dataPostURL = wz_pr + "//" + targetDomain + "/a?t=89";
-        recorderURL = wz_pr + "//" + targetDomain + "/r?r=1";
-        emailURL = wz_pr + "//" + targetDomain + "/e?r=1";
+        dataPostURL = wz_pr + '//' + targetDomain + '/a?t=89';
+        recorderURL = wz_pr + '//' + targetDomain + '/r?r=1';
+        emailURL = wz_pr + '//' + targetDomain + '/e?r=1';
 
         var currLocation = location.href;
         var url_params = wzrk_util.getURLParams(location.href.toLowerCase());
 
-        if (
-            typeof url_params["e"] != STRING_CONSTANTS.UNDEFINED &&
-            url_params["wzrk_ex"] == "0"
-        ) {
+        if (typeof url_params['e'] != STRING_CONSTANTS.UNDEFINED && url_params['wzrk_ex'] == '0') {
             return;
         }
 
@@ -343,11 +246,11 @@ function __wizrocket() {
 
         // -- update page count
         var obj = wiz.getSessionCookieObject();
-        var pgCount =
-            typeof obj["p"] == STRING_CONSTANTS.UNDEFINED ? 0 : obj["p"];
-        obj["p"] = ++pgCount;
+        var pgCount = (typeof obj['p'] == STRING_CONSTANTS.UNDEFINED) ? 0 : obj['p'];
+        obj['p'] = ++pgCount;
         wiz.setSessionCookieObject(obj);
         // -- update page count
+
 
         var data = {};
 
@@ -356,73 +259,56 @@ function __wizrocket() {
 
         if (domain != referrer_domain) {
             var maxLen = 120;
-            if (referrer_domain != "") {
-                //referrer exists, sending even when session exists as "x.in.com" and "y.in.com" could be separate accounts, but session created on domain "in.com"
-                referrer_domain =
-                    referrer_domain.length > maxLen
-                        ? referrer_domain.substring(0, maxLen)
-                        : referrer_domain;
-                data["referrer"] = referrer_domain;
+            if (referrer_domain != "") {  //referrer exists, sending even when session exists as "x.in.com" and "y.in.com" could be separate accounts, but session created on domain "in.com"
+                referrer_domain = referrer_domain.length > maxLen ? referrer_domain.substring(0, maxLen) : referrer_domain;
+                data['referrer'] = referrer_domain;
             }
 
-            var utm_source =
-                url_params["utm_source"] || url_params["wzrk_source"];
+
+            var utm_source = url_params['utm_source'] || url_params['wzrk_source'];
             if (typeof utm_source != STRING_CONSTANTS.UNDEFINED) {
-                utm_source =
-                    utm_source.length > maxLen
-                        ? utm_source.substring(0, maxLen)
-                        : utm_source;
-                data["us"] = utm_source; //utm_source
+                utm_source = utm_source.length > maxLen ? utm_source.substring(0, maxLen) : utm_source;
+                data['us'] = utm_source;                  //utm_source
             }
 
-            var utm_medium =
-                url_params["utm_medium"] || url_params["wzrk_medium"];
+            var utm_medium = url_params['utm_medium'] || url_params['wzrk_medium'];
             if (typeof utm_medium != STRING_CONSTANTS.UNDEFINED) {
-                utm_medium =
-                    utm_medium.length > maxLen
-                        ? utm_medium.substring(0, maxLen)
-                        : utm_medium;
-                data["um"] = utm_medium; //utm_medium
+                utm_medium = utm_medium.length > maxLen ? utm_medium.substring(0, maxLen) : utm_medium;
+                data['um'] = utm_medium;                 //utm_medium
             }
 
-            var utm_campaign =
-                url_params["utm_campaign"] || url_params["wzrk_campaign"];
+
+            var utm_campaign = url_params['utm_campaign'] || url_params['wzrk_campaign'];
             if (typeof utm_campaign != STRING_CONSTANTS.UNDEFINED) {
-                utm_campaign =
-                    utm_campaign.length > maxLen
-                        ? utm_campaign.substring(0, maxLen)
-                        : utm_campaign;
-                data["uc"] = utm_campaign; //utm_campaign
+                utm_campaign = utm_campaign.length > maxLen ? utm_campaign.substring(0, maxLen) : utm_campaign;
+                data['uc'] = utm_campaign;               //utm_campaign
             }
 
             // also independently send wzrk_medium to the backend
-            if (
-                typeof url_params["wzrk_medium"] != STRING_CONSTANTS.UNDEFINED
-            ) {
-                var wm = url_params["wzrk_medium"];
+            if (typeof url_params['wzrk_medium'] != STRING_CONSTANTS.UNDEFINED) {
+                var wm = url_params['wzrk_medium'];
                 if (wm.match(/^email$|^social$|^search$/)) {
-                    data["wm"] = wm; //wzrk_medium
+                    data['wm'] = wm;                       //wzrk_medium
                 }
+
             }
+
         }
 
         data = wiz.addSystemDataToObject(data, undefined);
-        data["cpg"] = currLocation;
+        data['cpg'] = currLocation;
 
         data[STRING_CONSTANTS.CAMP_COOKIE_NAME] = wiz.getCampaignObjForLc();
         var pageLoadUrl = dataPostURL;
         wiz.addFlags(data);
         //send dsync flag when page = 1
-        if (data["pg"] != STRING_CONSTANTS.UNDEFINED && data["pg"] == 1) {
+        if (data['pg'] != STRING_CONSTANTS.UNDEFINED && data['pg'] == 1) {
             wiz.overrideDSyncFlag(data);
         }
         pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", "page");
-        pageLoadUrl = wiz.addToURL(
-            pageLoadUrl,
-            "d",
-            wiz.compressData(JSON.stringify(data))
-        );
+        pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", wiz.compressData(JSON.stringify(data)));
         wiz.saveAndFireRequest(pageLoadUrl, false);
+
 
         // -- ping request logic
 
@@ -432,17 +318,12 @@ function __wizrocket() {
             data = wiz.addSystemDataToObject(data, undefined);
 
             pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PING);
-            pageLoadUrl = wiz.addToURL(
-                pageLoadUrl,
-                "d",
-                wiz.compressData(JSON.stringify(data))
-            );
+            pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", wiz.compressData(JSON.stringify(data)));
             wiz.saveAndFireRequest(pageLoadUrl, false);
         };
 
         setTimeout(function () {
-            if (pgCount <= 3) {
-                // send ping for up to 3 pages
+            if (pgCount <= 3) {  // send ping for up to 3 pages
                 pingRequest();
             }
 
@@ -455,15 +336,15 @@ function __wizrocket() {
 
         // -- ping request logic
 
-        if (typeof wizrocket["session"] == STRING_CONSTANTS.UNDEFINED) {
-            wizrocket["event"]["getDetails"] = function (evtName) {
+
+        if (typeof wizrocket['session'] == STRING_CONSTANTS.UNDEFINED) {
+
+            wizrocket['event']['getDetails'] = function (evtName) {
                 if (!wzrk_util.isPersonalizationActive()) {
                     return;
                 }
                 if (typeof globalEventsMap == STRING_CONSTANTS.UNDEFINED) {
-                    globalEventsMap = wiz.readFromLSorCookie(
-                        STRING_CONSTANTS.EV_COOKIE
-                    );
+                    globalEventsMap = wiz.readFromLSorCookie(STRING_CONSTANTS.EV_COOKIE);
                 }
                 if (typeof globalEventsMap == STRING_CONSTANTS.UNDEFINED) {
                     return;
@@ -472,54 +353,54 @@ function __wizrocket() {
                 var respObj = {};
 
                 if (typeof evtObj != STRING_CONSTANTS.UNDEFINED) {
-                    respObj["firstTime"] = new Date(evtObj[1] * 1000);
-                    respObj["lastTime"] = new Date(evtObj[2] * 1000);
-                    respObj["count"] = evtObj[0];
+                    respObj['firstTime'] = new Date(evtObj[1] * 1000);
+                    respObj['lastTime'] = new Date(evtObj[2] * 1000);
+                    respObj['count'] = evtObj[0];
                     return respObj;
                 }
+
+
             };
 
-            wizrocket["profile"]["getAttribute"] = function (propName) {
+            wizrocket['profile']['getAttribute'] = function (propName) {
                 if (!wzrk_util.isPersonalizationActive()) {
                     return;
                 }
                 if (typeof globalProfileMap == STRING_CONSTANTS.UNDEFINED) {
-                    globalProfileMap = wiz.readFromLSorCookie(
-                        STRING_CONSTANTS.PR_COOKIE
-                    );
+                    globalProfileMap = wiz.readFromLSorCookie(STRING_CONSTANTS.PR_COOKIE);
                 }
                 if (typeof globalProfileMap != STRING_CONSTANTS.UNDEFINED) {
                     return globalProfileMap[propName];
                 }
             };
-            wizrocket["session"] = {};
-            wizrocket["session"]["getTimeElapsed"] = function () {
+            wizrocket['session'] = {};
+            wizrocket['session']['getTimeElapsed'] = function () {
                 if (!wzrk_util.isPersonalizationActive()) {
                     return;
                 }
                 if (typeof scookieObj != STRING_CONSTANTS.UNDEFINED) {
                     scookieObj = wiz.getSessionCookieObject();
                 }
-                var sessionStart = scookieObj["s"];
+                var sessionStart = scookieObj['s'];
                 if (typeof sessionStart != STRING_CONSTANTS.UNDEFINED) {
                     var ts = wzrk_util.getNow();
                     return Math.floor(ts - sessionStart);
                 }
             };
 
-            wizrocket["user"] = {};
-            wizrocket["user"]["getTotalVisits"] = function () {
+            wizrocket['user'] = {};
+            wizrocket['user']['getTotalVisits'] = function () {
                 if (!wzrk_util.isPersonalizationActive()) {
                     return;
                 }
-                var visitCount = wiz.getMetaProp("sc");
+                var visitCount = wiz.getMetaProp('sc');
                 if (typeof visitCount == STRING_CONSTANTS.UNDEFINED) {
                     visitCount = 1;
                 }
                 return visitCount;
             };
 
-            wizrocket["session"]["getPageCount"] = function () {
+            wizrocket['session']['getPageCount'] = function () {
                 if (!wzrk_util.isPersonalizationActive()) {
                     return;
                 }
@@ -527,21 +408,24 @@ function __wizrocket() {
                 if (typeof scookieObj != STRING_CONSTANTS.UNDEFINED) {
                     scookieObj = wiz.getSessionCookieObject();
                 }
-                return scookieObj["p"];
+                return scookieObj['p'];
             };
 
-            wizrocket["user"]["getLastVisit"] = function () {
+            wizrocket['user']['getLastVisit'] = function () {
                 if (!wzrk_util.isPersonalizationActive()) {
                     return;
                 }
-                var prevSession = wiz.getMetaProp("ps");
+                var prevSession = wiz.getMetaProp('ps');
                 if (typeof prevSession != STRING_CONSTANTS.UNDEFINED) {
                     return new Date(prevSession * 1000);
                 }
             };
         }
-        onloadcalled = 1; //always the last line in this function
+        onloadcalled = 1;   //always the last line in this function
+
+
     };
+
 
     wiz.readFromLSorCookie = function (property) {
         var data;
@@ -553,11 +437,7 @@ function __wizrocket() {
         } else {
             data = wiz.readCookie(property);
         }
-        if (
-            typeof data != STRING_CONSTANTS.UNDEFINED &&
-            data !== null &&
-            data.trim() != ""
-        ) {
+        if (typeof data != STRING_CONSTANTS.UNDEFINED && data !== null && data.trim() != '') {
             var value = JSON.parse(decodeURIComponent(data));
             globalCache[property] = value;
             return value;
@@ -570,24 +450,12 @@ function __wizrocket() {
         }
         try {
             if (wzrk_util.isLocalStorageSupported()) {
-                localStorage[property] = encodeURIComponent(
-                    JSON.stringify(val)
-                );
+                localStorage[property] = encodeURIComponent(JSON.stringify(val));
             } else {
-                if (property === STRING_CONSTANTS.GCOOKIE_NAME) {
-                    wiz.createCookie(
-                        property,
-                        encodeURIComponent(val),
-                        0,
-                        domain
-                    );
+                if(property === STRING_CONSTANTS.GCOOKIE_NAME) {
+                    wiz.createCookie(property, encodeURIComponent(val), 0, domain);
                 } else {
-                    wiz.createCookie(
-                        property,
-                        encodeURIComponent(JSON.stringify(val)),
-                        0,
-                        domain
-                    );
+                    wiz.createCookie(property, encodeURIComponent(JSON.stringify(val)), 0, domain);
                 }
             }
             globalCache[property] = val;
@@ -596,7 +464,8 @@ function __wizrocket() {
     };
 
     var processEvent = function (data) {
-        wiz.addToLocalEventMap(data["evtName"]);
+
+        wiz.addToLocalEventMap(data['evtName']);
         data = wiz.addSystemDataToObject(data, undefined);
         wiz.addFlags(data);
         data[STRING_CONSTANTS.CAMP_COOKIE_NAME] = wiz.getCampaignObjForLc();
@@ -606,92 +475,74 @@ function __wizrocket() {
         pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
         pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
 
+
         wiz.saveAndFireRequest(pageLoadUrl, false);
     };
 
     wiz.processEventArray = function (eventArr) {
+
         if (wzrk_util.isArray(eventArr)) {
+
             /** looping since the events could be fired in quick succession, and we could end up
              with multiple pushes without getting a chance to process
              */
             while (eventArr.length > 0) {
+
                 var eventName = eventArr.shift(); // take out name of the event
 
                 if (!wzrk_util.isString(eventName)) {
-                    wc.e(wzrk_msg["event-error"]);
+                    wc.e(wzrk_msg['event-error']);
                     return;
                 }
 
                 if (eventName.length > 1024) {
                     eventName = eventName.substring(0, 1024);
-                    wiz.reportError(
-                        510,
-                        eventName + "... length exceeded 1024 chars. Trimmed."
-                    );
+                    wiz.reportError(510, eventName + "... length exceeded 1024 chars. Trimmed.");
                 }
 
-                if (
-                    eventName == "Stayed" ||
-                    eventName == "UTM Visited" ||
-                    eventName == "App Launched" ||
-                    eventName == "Notification Sent" ||
-                    eventName == "Notification Viewed" ||
-                    eventName == "Notification Clicked"
-                ) {
-                    wiz.reportError(
-                        513,
-                        eventName +
-                        " is a restricted system event. It cannot be used as an event name."
-                    );
+                if (eventName == "Stayed" || eventName == "UTM Visited" || eventName == "App Launched" ||
+                    eventName == "Notification Sent" || eventName == "Notification Viewed" || eventName == "Notification Clicked") {
+                    wiz.reportError(513, eventName + " is a restricted system event. It cannot be used as an event name.");
                     continue;
                 }
                 var data = {};
-                data["type"] = "event";
-                data["evtName"] = wzrk_util.sanitize(
-                    eventName,
-                    unsupportedKeyCharRegex
-                );
+                data['type'] = "event";
+                data['evtName'] = wzrk_util.sanitize(eventName, unsupportedKeyCharRegex);
 
                 if (eventArr.length != 0) {
                     var eventObj = eventArr.shift();
 
                     if (!wzrk_util.isObject(eventObj)) {
-                        eventArr.unshift(eventObj); // put it back if it is not an object
+                        eventArr.unshift(eventObj);    // put it back if it is not an object
                     } else {
                         //check Charged Event vs. other events.
                         if (eventName == "Charged") {
                             if (!wiz.isChargedEventStructureValid(eventObj)) {
-                                wiz.reportError(
-                                    511,
-                                    "Charged event structure invalid. Not sent."
-                                );
+                                wiz.reportError(511, "Charged event structure invalid. Not sent.");
                                 continue;
                             }
                         } else {
                             if (!wiz.isEventStructureFlat(eventObj)) {
-                                wiz.reportError(
-                                    512,
-                                    eventName +
-                                    " event structure invalid. Not sent."
-                                );
+                                wiz.reportError(512, eventName + " event structure invalid. Not sent.");
                                 continue;
                             }
+
                         }
 
-                        data["evtData"] = eventObj;
+                        data['evtData'] = eventObj;
                     }
                 }
                 processEvent(data);
+
             }
+
         }
     };
 
     wiz.addToLocalEventMap = function (evtName) {
         if (wzrk_util.isLocalStorageSupported()) {
             if (typeof globalEventsMap == STRING_CONSTANTS.UNDEFINED) {
-                globalEventsMap = wiz.readFromLSorCookie(
-                    STRING_CONSTANTS.EV_COOKIE
-                );
+                globalEventsMap = wiz.readFromLSorCookie(STRING_CONSTANTS.EV_COOKIE);
                 if (typeof globalEventsMap == STRING_CONSTANTS.UNDEFINED) {
                     globalEventsMap = {};
                 }
@@ -715,23 +566,21 @@ function __wizrocket() {
     wiz.addToLocalProfileMap = function (profileObj, override) {
         if (wzrk_util.isLocalStorageSupported()) {
             if (typeof globalProfileMap == STRING_CONSTANTS.UNDEFINED) {
-                globalProfileMap = wiz.readFromLSorCookie(
-                    STRING_CONSTANTS.PR_COOKIE
-                );
+                globalProfileMap = wiz.readFromLSorCookie(STRING_CONSTANTS.PR_COOKIE);
                 if (typeof globalProfileMap == STRING_CONSTANTS.UNDEFINED) {
                     globalProfileMap = {};
                 }
             }
 
             //Move props from custom bucket to outside.
-            if (typeof profileObj["_custom"] != STRING_CONSTANTS.UNDEFINED) {
-                var keys = profileObj["_custom"];
+            if (typeof profileObj['_custom'] != STRING_CONSTANTS.UNDEFINED) {
+                var keys = profileObj['_custom'];
                 for (var key in keys) {
                     if (keys.hasOwnProperty(key)) {
                         profileObj[key] = keys[key];
                     }
                 }
-                delete profileObj["_custom"];
+                delete profileObj['_custom'];
             }
 
             for (var prop in profileObj) {
@@ -742,10 +591,8 @@ function __wizrocket() {
                     globalProfileMap[prop] = profileObj[prop];
                 }
             }
-            if (
-                typeof globalProfileMap["_custom"] != STRING_CONSTANTS.UNDEFINED
-            ) {
-                delete globalProfileMap["_custom"];
+            if (typeof globalProfileMap['_custom'] != STRING_CONSTANTS.UNDEFINED) {
+                delete globalProfileMap['_custom'];
             }
             wiz.saveToLSorCookie(STRING_CONSTANTS.PR_COOKIE, globalProfileMap);
         }
@@ -753,56 +600,42 @@ function __wizrocket() {
 
     wiz.overrideDSyncFlag = function (data) {
         if (wzrk_util.isPersonalizationActive()) {
-            data["dsync"] = true;
+            data['dsync'] = true;
         }
     };
 
     wiz.addARPToRequest = function (url) {
-        if (
-            wzrk_util.isLocalStorageSupported() &&
-            typeof localStorage[STRING_CONSTANTS.ARP_COOKIE] !=
-            STRING_CONSTANTS.UNDEFINED
-        ) {
-            return wiz.addToURL(
-                url,
-                "arp",
-                wiz.compressData(
-                    JSON.stringify(
-                        wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE)
-                    )
-                )
-            );
+        if (wzrk_util.isLocalStorageSupported() && typeof localStorage[STRING_CONSTANTS.ARP_COOKIE] != STRING_CONSTANTS.UNDEFINED) {
+            return wiz.addToURL(url, 'arp', wiz.compressData(JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))));
         }
         return url;
     };
 
     wiz.addFlags = function (data) {
+
         //check if cookie should be cleared.
         clearCookie = wiz.getAndClearMetaProp(STRING_CONSTANTS.CLEAR);
         if (clearCookie !== undefined && clearCookie) {
-            data["rc"] = true;
-            wc.d(
-                "reset cookie sent in request and cleared from meta for future requests."
-            );
+            data['rc'] = true;
+            wc.d("reset cookie sent in request and cleared from meta for future requests.");
         }
         if (wzrk_util.isPersonalizationActive()) {
-            var lastSyncTime = wiz.getMetaProp("lsTime");
-            var expirySeconds = wiz.getMetaProp("exTs");
+            var lastSyncTime = wiz.getMetaProp('lsTime');
+            var expirySeconds = wiz.getMetaProp('exTs');
 
             //dsync not found in local storage - get data from server
-            if (
-                typeof lastSyncTime == STRING_CONSTANTS.UNDEFINED ||
-                typeof expirySeconds == STRING_CONSTANTS.UNDEFINED
-            ) {
-                data["dsync"] = true;
+            if (typeof lastSyncTime == STRING_CONSTANTS.UNDEFINED || typeof expirySeconds == STRING_CONSTANTS.UNDEFINED) {
+                data['dsync'] = true;
                 return;
             }
             var now = wzrk_util.getNow();
             //last sync time has expired - get fresh data from server
             if (lastSyncTime + expirySeconds < now) {
-                data["dsync"] = true;
+                data['dsync'] = true;
             }
         }
+
+
     };
 
     wiz.getCampaignObjForLc = function () {
@@ -811,7 +644,7 @@ function __wizrocket() {
             campObj = wzrk_util.getCampaignObject();
 
             var resultObj = [];
-            var globalObj = campObj["global"];
+            var globalObj = campObj['global'];
             var today = wzrk_util.getToday();
             var dailyObj = campObj[today];
 
@@ -822,21 +655,13 @@ function __wizrocket() {
                         var dailyC = 0;
                         var totalC = 0;
                         var campaignId = campaignIdArray[index];
-                        if (campaignId == "tc") {
+                        if (campaignId == 'tc') {
                             continue;
                         }
-                        if (
-                            typeof dailyObj != STRING_CONSTANTS.UNDEFINED &&
-                            typeof dailyObj[campaignId] !=
-                            STRING_CONSTANTS.UNDEFINED
-                        ) {
+                        if (typeof dailyObj != STRING_CONSTANTS.UNDEFINED && typeof dailyObj[campaignId] != STRING_CONSTANTS.UNDEFINED) {
                             dailyC = dailyObj[campaignId];
                         }
-                        if (
-                            typeof globalObj != STRING_CONSTANTS.UNDEFINED &&
-                            typeof globalObj[campaignId] !=
-                            STRING_CONSTANTS.UNDEFINED
-                        ) {
+                        if (typeof globalObj != STRING_CONSTANTS.UNDEFINED && typeof globalObj[campaignId] != STRING_CONSTANTS.UNDEFINED) {
                             totalC = globalObj[campaignId];
                         }
                         var element = [campaignId, dailyC, totalC];
@@ -845,16 +670,14 @@ function __wizrocket() {
                 }
             }
             var todayC = 0;
-            if (
-                typeof dailyObj != STRING_CONSTANTS.UNDEFINED &&
-                typeof dailyObj["tc"] != STRING_CONSTANTS.UNDEFINED
-            ) {
-                todayC = dailyObj["tc"];
+            if (typeof dailyObj != STRING_CONSTANTS.UNDEFINED && typeof dailyObj['tc'] != STRING_CONSTANTS.UNDEFINED) {
+                todayC = dailyObj['tc'];
             }
-            resultObj = {wmp: todayC, tlc: resultObj};
+            resultObj = {"wmp": todayC, 'tlc': resultObj};
             return resultObj;
         }
     };
+
 
     var deleteUser = function () {
         blockRequeust = true;
@@ -876,7 +699,8 @@ function __wizrocket() {
         wiz.deleteCookie(SCOOKIE_NAME, broadDomain);
         wiz.deleteCookie(STRING_CONSTANTS.ARP_COOKIE, broadDomain);
         gcookie = null;
-        scookieObj = "";
+        scookieObj = '';
+
     };
 
     var setInstantDeleteFlagInK = function () {
@@ -884,7 +708,7 @@ function __wizrocket() {
         if (typeof k == STRING_CONSTANTS.UNDEFINED) {
             k = {};
         }
-        k["flag"] = true;
+        k['flag'] = true;
         wiz.saveToLSorCookie(STRING_CONSTANTS.KCOOKIE_NAME, k);
     };
 
@@ -900,14 +724,9 @@ function __wizrocket() {
     };
 
     wiz.arp = function (jsonMap) {
-        if (jsonMap["i_n"] > 0 && jsonMap["j_n"] > 0 && !jsonMap["k_n"]) {
-            return null;
-        }
         if (wzrk_util.isLocalStorageSupported()) {
             try {
-                var arpFromStorage = wiz.readFromLSorCookie(
-                    STRING_CONSTANTS.ARP_COOKIE
-                );
+                var arpFromStorage = wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE);
                 if (typeof arpFromStorage == STRING_CONSTANTS.UNDEFINED) {
                     arpFromStorage = {};
                 }
@@ -921,31 +740,30 @@ function __wizrocket() {
                         }
                     }
                 }
-                wiz.saveToLSorCookie(
-                    STRING_CONSTANTS.ARP_COOKIE,
-                    arpFromStorage
-                );
+                wiz.saveToLSorCookie(STRING_CONSTANTS.ARP_COOKIE, arpFromStorage);
+
+
             } catch (e) {
                 wc.e("Unable to parse ARP JSON: " + e);
             }
+
         }
     };
 
     wiz.processProfileArray = function (profileArr) {
+
         var addToK = function (ids) {
             var k = wiz.readFromLSorCookie(STRING_CONSTANTS.KCOOKIE_NAME);
             var lseenTs, idArr, flag;
             var nowDate = new Date();
             var now = nowDate.getTime();
-            var shouldAddTOLRU = true;
             if (typeof k == STRING_CONSTANTS.UNDEFINED) {
                 k = {};
                 lseenTs = now;
                 idArr = ids;
-            } else {
-                /*check if already exists*/
-                lseenTs = k["ls"];
-                idArr = k["id"];
+            } else {/*check if already exists*/
+                lseenTs = k['ls'];
+                idArr = k['id'];
                 var sameUser = false;
                 if (typeof idArr == STRING_CONSTANTS.UNDEFINED) {
                     idArr = [];
@@ -954,7 +772,7 @@ function __wizrocket() {
                 if (idArr.length > 20) {
                     return;
                 }
-                flag = k["flag"];
+                flag = k['flag'];
 
                 for (var id in ids) {
                     if (ids.hasOwnProperty(id)) {
@@ -973,127 +791,68 @@ function __wizrocket() {
                         }
                     }
                 }
-
                 if (!sameUser) {
-                    if (flag || now - lseenTs > 60 * 1000) {
+                    if (flag || (now - lseenTs > (60 * 1000))) {
                         /* flag has been set - user has been logged out - new user || 60 secs have passed since last prof_push so new user*/
                         //wipe cookie etc
                         wiz.clear();
                         idArr = ids;
-                        shouldAddTOLRU = true;
                     }
                 }
             }
-            k["id"] = idArr;
-            k["ls"] = now;
-            k["flag"] = false;
-
-            LRU_CACHE = new wiz.LRU_cache(LRU_CACHE_SIZE);
-
+            k['id'] = idArr;
+            k['ls'] = now;
+            k['flag'] = false;
             wiz.saveToLSorCookie(STRING_CONSTANTS.KCOOKIE_NAME, k);
-
-            // Check if idArr exists in LRU Cache and if exists return the respective GUID else Add entry to LRU_CACHE
-
-
-            if (idArr.length == 1) {
-                var temp_k = [...idArr];
-                // OUL case
-                var guidFromLRUCache = LRU_CACHE.getKEY(temp_k[0]);
-                if (guidFromLRUCache) {
-                    if (wiz.isValueValid(guidFromLRUCache)) {
-                        LRU_CACHE.set(guidFromLRUCache, temp_k[0]);
-                        gcookie = guidFromLRUCache;
-                    }
-                } else {
-                    var guidFromLSorCookie = wiz.readFromLSorCookie(
-                        STRING_CONSTANTS.GCOOKIE_NAME
-                    );
-                    if (wiz.isValueValid(guidFromLSorCookie)) {
-                        LRU_CACHE.set(guidFromLSorCookie, temp_k[0]);
-                    }
-                }
-            }
         };
 
         if (wzrk_util.isArray(profileArr) && profileArr.length > 0) {
+
             for (var index in profileArr) {
                 var outerObj = profileArr[index];
                 var data = {};
                 var profileObj;
-                if (typeof outerObj["Site"] != STRING_CONSTANTS.UNDEFINED) {
-                    //organic data from the site
-                    profileObj = outerObj["Site"];
-                    if (
-                        wzrk_util.isObjectEmpty(profileObj) ||
-                        !wiz.isProfileValid(profileObj)
-                    ) {
+                if (typeof outerObj['Site'] != STRING_CONSTANTS.UNDEFINED) {       //organic data from the site
+                    profileObj = outerObj['Site'];
+                    if (wzrk_util.isObjectEmpty(profileObj) || !wiz.isProfileValid(profileObj)) {
                         return;
                     }
-                } else if (
-                    typeof outerObj["Facebook"] != STRING_CONSTANTS.UNDEFINED
-                ) {
-                    //fb connect data
-                    var FbProfileObj = outerObj["Facebook"];
+
+                } else if (typeof outerObj['Facebook'] != STRING_CONSTANTS.UNDEFINED) {   //fb connect data
+                    var FbProfileObj = outerObj['Facebook'];
                     //make sure that the object contains any data at all
 
-                    if (
-                        !wzrk_util.isObjectEmpty(FbProfileObj) &&
-                        !FbProfileObj["error"]
-                    ) {
+                    if (!wzrk_util.isObjectEmpty(FbProfileObj) && (!FbProfileObj['error'])) {
                         profileObj = wiz.processFBUserObj(FbProfileObj);
                     }
-                } else if (
-                    typeof outerObj["Google Plus"] != STRING_CONSTANTS.UNDEFINED
-                ) {
-                    var GPlusProfileObj = outerObj["Google Plus"];
-                    if (
-                        !wzrk_util.isObjectEmpty(GPlusProfileObj) &&
-                        !GPlusProfileObj["error"]
-                    ) {
+
+                } else if (typeof outerObj['Google Plus'] != STRING_CONSTANTS.UNDEFINED) {
+                    var GPlusProfileObj = outerObj['Google Plus'];
+                    if (!wzrk_util.isObjectEmpty(GPlusProfileObj) && (!GPlusProfileObj['error'])) {
                         profileObj = wiz.processGPlusUserObj(GPlusProfileObj);
                     }
                 }
-                if (
-                    typeof profileObj != STRING_CONSTANTS.UNDEFINED &&
-                    !wzrk_util.isObjectEmpty(profileObj)
-                ) {
-                    // profile got set from above
-                    data["type"] = "profile";
-                    if (
-                        typeof profileObj["tz"] === STRING_CONSTANTS.UNDEFINED
-                    ) {
+                if (typeof profileObj != STRING_CONSTANTS.UNDEFINED && (!wzrk_util.isObjectEmpty(profileObj))) {   // profile got set from above
+                    data['type'] = "profile";
+                    if (typeof profileObj['tz'] === STRING_CONSTANTS.UNDEFINED) {
                         //try to auto capture user timezone if not present
-                        profileObj["tz"] = new Date()
-                            .toString()
-                            .match(/([A-Z]+[\+-][0-9]+)/)[1];
+                        profileObj['tz'] = new Date().toString().match(/([A-Z]+[\+-][0-9]+)/)[1];
                     }
 
-                    data["profile"] = profileObj;
+                    data['profile'] = profileObj;
                     var ids = [];
                     if (wzrk_util.isLocalStorageSupported()) {
-                        if (
-                            typeof profileObj["Email"] !=
-                            STRING_CONSTANTS.UNDEFINED
-                        ) {
-                            ids.push(profileObj["Email"]);
+                        if (typeof profileObj['Email'] != STRING_CONSTANTS.UNDEFINED) {
+                            ids.push(profileObj['Email']);
                         }
-                        if (
-                            typeof profileObj["GPID"] !=
-                            STRING_CONSTANTS.UNDEFINED
-                        ) {
-                            ids.push("GP:" + profileObj["GPID"]);
+                        if (typeof profileObj['GPID'] != STRING_CONSTANTS.UNDEFINED) {
+                            ids.push("GP:" + profileObj['GPID']);
                         }
-                        if (
-                            typeof profileObj["FBID"] !=
-                            STRING_CONSTANTS.UNDEFINED
-                        ) {
-                            ids.push("FB:" + profileObj["FBID"]);
+                        if (typeof profileObj['FBID'] != STRING_CONSTANTS.UNDEFINED) {
+                            ids.push("FB:" + profileObj['FBID']);
                         }
-                        if (
-                            typeof profileObj["Identity"] !=
-                            STRING_CONSTANTS.UNDEFINED
-                        ) {
-                            ids.push(profileObj["Identity"]);
+                        if (typeof profileObj['Identity'] != STRING_CONSTANTS.UNDEFINED) {
+                            ids.push(profileObj['Identity']);
                         }
                         if (ids.length > 0) {
                             addToK(ids);
@@ -1103,20 +862,14 @@ function __wizrocket() {
                     data = wiz.addSystemDataToObject(data, undefined);
 
                     wiz.addFlags(data);
-                    if (data["rc"] != null && data["rc"] && gcookie != null) {
-                        data["rc"] = false;
-                    }
                     var compressedData = wiz.compressData(JSON.stringify(data));
 
                     var pageLoadUrl = dataPostURL;
                     pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
-                    pageLoadUrl = wiz.addToURL(
-                        pageLoadUrl,
-                        "d",
-                        compressedData
-                    );
+                    pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
 
                     wiz.saveAndFireRequest(pageLoadUrl, blockRequeust);
+
                 }
             }
         }
@@ -1125,16 +878,10 @@ function __wizrocket() {
     wiz.processLoginArray = function (loginArr) {
         if (wzrk_util.isArray(loginArr) && loginArr.length > 0) {
             var profileObj = loginArr.pop();
-            var processProfile =
-                typeof profileObj != STRING_CONSTANTS.UNDEFINED &&
-                wzrk_util.isObject(profileObj) &&
-                ((typeof profileObj["Site"] != STRING_CONSTANTS.UNDEFINED &&
-                    Object.keys(profileObj["Site"]).length > 0) ||
-                    (typeof profileObj["Facebook"] !=
-                        STRING_CONSTANTS.UNDEFINED &&
-                        Object.keys(profileObj["Facebook"]).length > 0) ||
-                    (typeof profileObj["Google Plus"] != "undefined" &&
-                        Object.keys(profileObj["Google Plus"]).length > 0));
+            var processProfile = typeof profileObj != STRING_CONSTANTS.UNDEFINED && wzrk_util.isObject(profileObj) &&
+                ((typeof profileObj['Site'] != STRING_CONSTANTS.UNDEFINED && Object.keys(profileObj["Site"]).length > 0) ||
+                    (typeof profileObj['Facebook'] != STRING_CONSTANTS.UNDEFINED && Object.keys(profileObj["Facebook"]).length > 0 ) ||
+                    (typeof profileObj['Google Plus'] != "undefined" && Object.keys(profileObj["Google Plus"]).length > 0));
             if (processProfile) {
                 setInstantDeleteFlagInK();
                 wiz.processProfileArray([profileObj]);
@@ -1145,207 +892,121 @@ function __wizrocket() {
         }
     };
 
-    wiz.LRU_cache = function (max) {
-        this.max = max;
-        var LRU_CACHE = wiz.readFromLSorCookie(STRING_CONSTANTS.LRU_CACHE);
-        if (LRU_CACHE) {
-            var lru_cache = new Map();
-            LRU_CACHE = LRU_CACHE.cache;
-            for (let entry of LRU_CACHE) {
-                lru_cache.set(entry[0], entry[1]);
-            }
-            this.cache = lru_cache;
-        } else {
-            this.cache = new Map();
-        }
-
-        this.get = function (key) {
-            var item = this.cache.get(key);
-            if (item) {
-                // refresh key
-                this.cache.delete(key);
-                this.cache.set(key, item);
-                wiz.saveToLSorCookie(STRING_CONSTANTS.LRU_CACHE, {
-                    cache: Array.from(this.cache.entries())
-                });
-            }
-            return item;
-        };
-
-        this.set = function (key, val) {
-            if (this.cache.has(key))
-            // refresh key
-                this.cache.delete(key);
-            else if (this.cache.size == this.max)
-            // evict oldest
-                this.cache.delete(this._first());
-            this.cache.set(key, val);
-            wiz.saveToLSorCookie(STRING_CONSTANTS.LRU_CACHE, {
-                cache: Array.from(this.cache.entries())
-            });
-        };
-
-        this._first = function () {
-            return this.cache.keys().next().value;
-        };
-
-        this.getKEY = function (givenVal) {
-            if (givenVal == null) return null;
-            var itr = this.cache.keys();
-            var curr = itr.next();
-            while (!curr.done) {
-                if (this.cache.get(curr.value) != null) {
-                    var found = this.cache.get(curr.value).includes(givenVal);
-                    if (found) {
-                        return curr.value;
-                    }
-                }
-                curr = itr.next();
-            }
-            return null;
-        };
-
-        this.getSecondLastKEY = function () {
-            var keysArr = [...this.cache.keys()];
-            return keysArr != null && keysArr.length > 1
-                ? keysArr[keysArr.length - 2]
-                : -1;
-        };
-
-        this.doesExistsInLast = function (value) {
-            return Array.from(this.cache)[this.cache.size - 1][1].includes(
-                value
-            );
-        };
-    };
-
     wiz.overloadArrayPush = function () {
-        if (typeof wizrocket["onUserLogin"] === "undefined") {
-            wizrocket["onUserLogin"] = [];
+
+        if (typeof wizrocket['onUserLogin'] === "undefined") {
+            wizrocket['onUserLogin'] = [];
         }
 
-        wizrocket["onUserLogin"].push = function () {
+        wizrocket['onUserLogin'].push = function () {
             //since arguments is not an array, convert it into an array
             wiz.processLoginArray(Array.prototype.slice.call(arguments));
             return 0;
         };
 
-        if (typeof wizrocket["privacy"] === "undefined") {
-            wizrocket["privacy"] = [];
+        if (typeof wizrocket['privacy'] === "undefined") {
+            wizrocket['privacy'] = [];
         }
 
-        wizrocket["privacy"].push = function () {
+        wizrocket['privacy'].push = function () {
             //since arguments is not an array, convert it into an array
             wiz.processPrivacyArray(Array.prototype.slice.call(arguments));
             return 0;
         };
 
-        wizrocket["event"].push = function () {
+        wizrocket['event'].push = function () {
             //since arguments is not an array, convert it into an array
             wiz.processEventArray(Array.prototype.slice.call(arguments));
             return 0;
         };
 
-        if (typeof wizrocket["notifications"] === STRING_CONSTANTS.UNDEFINED)
-            wizrocket["notifications"] = [];
+        if (typeof wizrocket['notifications'] === STRING_CONSTANTS.UNDEFINED)
+            wizrocket['notifications'] = [];
 
-        wizrocket["notifications"].push = function () {
+        wizrocket['notifications'].push = function () {
             wiz.setUpWebPush(Array.prototype.slice.call(arguments));
             return 0;
         };
 
-        wizrocket["profile"].push = function () {
+
+        wizrocket['profile'].push = function () {
             //since arguments is not an array, convert it into an array
             wiz.processProfileArray(Array.prototype.slice.call(arguments));
             return 0;
         };
-        wizrocket["logout"] = wiz.logout;
-        wizrocket["clear"] = wiz.clear;
-        wiz.processLoginArray(wizrocket["onUserLogin"]); // process old stuff from the login array before we overloaded the push method
-        wiz.processPrivacyArray(wizrocket["privacy"]); // process old stuff from the privacy array before we overloaded the push method
-        wiz.processEventArray(wizrocket["event"]); // process old stuff from the event array before we overloaded the push method
-        wiz.processProfileArray(wizrocket["profile"]); // process old stuff from the profile array before we overloaded the push method
-        wiz.setUpWebPush(wizrocket["notifications"]); // process old stuff from notifications array before overload
+        wizrocket['logout'] = wiz.logout;
+        wizrocket['clear'] = wiz.clear;
+        wiz.processLoginArray(wizrocket['onUserLogin']);  // process old stuff from the login array before we overloaded the push method
+        wiz.processPrivacyArray(wizrocket['privacy']);  // process old stuff from the privacy array before we overloaded the push method
+        wiz.processEventArray(wizrocket['event']);      // process old stuff from the event array before we overloaded the push method
+        wiz.processProfileArray(wizrocket['profile']);  // process old stuff from the profile array before we overloaded the push method
+        wiz.setUpWebPush(wizrocket['notifications']); // process old stuff from notifications array before overload
 
         // clean up the notifications array
-        while (wizrocket["notifications"].length > 0)
-            wizrocket["notifications"].pop();
+        while (wizrocket['notifications'].length > 0)
+            wizrocket['notifications'].pop();
     };
 
     var isOptInRequest = false;
 
-    var dropRequestDueToOptOut = function () {
-        if (
-            isOptInRequest ||
-            !wiz.isValueValid(gcookie) ||
-            !wzrk_util.isString(gcookie)
-        ) {
+    var dropRequestDueToOptOut = function() {
+        if(isOptInRequest || !wiz.isValueValid(gcookie) || !wzrk_util.isString(gcookie)){
             isOptInRequest = false;
             return false;
         }
         return gcookie.slice(-3) === STRING_CONSTANTS.OPTOUT_COOKIE_ENDSWITH;
     };
 
-    var addUseIPToRequest = function (pageLoadUrl) {
+    var addUseIPToRequest = function(pageLoadUrl) {
         var useIP = wiz.getMetaProp(STRING_CONSTANTS.USEIP_KEY);
-        if (typeof useIP !== "boolean") {
+        if(typeof useIP !== 'boolean'){
             useIP = false;
         }
-        return wiz.addToURL(
-            pageLoadUrl,
-            STRING_CONSTANTS.USEIP_KEY,
-            useIP ? "true" : "false"
-        );
+        return wiz.addToURL(pageLoadUrl, STRING_CONSTANTS.USEIP_KEY, useIP ? 'true' : 'false');
     };
 
-    wiz.processPrivacyArray = function (privacyArr) {
+    wiz.processPrivacyArray = function(privacyArr){
         if (wzrk_util.isArray(privacyArr) && privacyArr.length > 0) {
             var privacyObj = privacyArr[0];
             var data = {};
             var profileObj = {};
-            if (privacyObj.hasOwnProperty(STRING_CONSTANTS.OPTOUT_KEY)) {
+            if(privacyObj.hasOwnProperty(STRING_CONSTANTS.OPTOUT_KEY)){
                 var optOut = privacyObj[STRING_CONSTANTS.OPTOUT_KEY];
-                if (typeof optOut === "boolean") {
+                if(typeof optOut === 'boolean'){
                     profileObj[STRING_CONSTANTS.CT_OPTOUT_KEY] = optOut;
                     //should be true when user wants to opt in
                     isOptInRequest = !optOut;
                 }
             }
-            if (privacyObj.hasOwnProperty(STRING_CONSTANTS.USEIP_KEY)) {
+            if(privacyObj.hasOwnProperty(STRING_CONSTANTS.USEIP_KEY)){
                 var useIP = privacyObj[STRING_CONSTANTS.USEIP_KEY];
-                if (typeof useIP === "boolean") {
+                if(typeof useIP === 'boolean'){
                     wiz.setMetaProp(STRING_CONSTANTS.USEIP_KEY, useIP);
                 }
             }
-            if (!wzrk_util.isObjectEmpty(profileObj)) {
-                data["type"] = "profile";
-                data["profile"] = profileObj;
+            if(!wzrk_util.isObjectEmpty(profileObj)){
+                data['type'] = "profile";
+                data['profile'] = profileObj;
                 data = wiz.addSystemDataToObject(data, undefined);
                 var compressedData = wiz.compressData(JSON.stringify(data));
                 var pageLoadUrl = dataPostURL;
                 pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
                 pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
-                pageLoadUrl = wiz.addToURL(
-                    pageLoadUrl,
-                    STRING_CONSTANTS.OPTOUT_KEY,
-                    optOut ? "true" : "false"
-                );
+                pageLoadUrl = wiz.addToURL(pageLoadUrl, STRING_CONSTANTS.OPTOUT_KEY, optOut ? 'true' : 'false');
                 wiz.saveAndFireRequest(pageLoadUrl, blockRequeust);
             }
         }
     };
 
     wiz.saveAndFireRequest = function (url, override) {
+
         var now = wzrk_util.getNow();
         url = wiz.addToURL(url, "rn", ++REQ_N);
-        var data = url + "&i=" + now + "&sn=" + seqNo;
+        var data = url + '&i=' + now + "&sn=" + seqNo;
         wiz.backUpEvent(data, REQ_N);
 
-        if (
-            !blockRequeust ||
-            override ||
-            (clearCookie !== undefined && clearCookie)
-        ) {
+
+        if (!blockRequeust || override || (clearCookie !== undefined && clearCookie)) {
             if (now == requestTime) {
                 seqNo++;
             } else {
@@ -1354,76 +1015,72 @@ function __wizrocket() {
             }
 
             wiz.fireRequest(data);
+
         } else {
-            wc.d(
-                "Not fired due to block request - " +
-                blockRequeust +
-                " or clearCookie - " +
-                clearCookie
-            );
+            wc.d("Not fired due to block request - " + blockRequeust + " or clearCookie - " + clearCookie);
         }
+
     };
 
-    // profile like https://developers.google.com/+/api/latest/people
+
+// profile like https://developers.google.com/+/api/latest/people
     wiz.processGPlusUserObj = function (user) {
+
         var profileData = {};
-        if (typeof user["displayName"] != STRING_CONSTANTS.UNDEFINED) {
-            profileData["Name"] = user["displayName"];
+        if (typeof user['displayName'] != STRING_CONSTANTS.UNDEFINED) {
+            profileData['Name'] = user['displayName'];
         }
-        if (typeof user["id"] != STRING_CONSTANTS.UNDEFINED) {
-            profileData["GPID"] = user["id"] + "";
+        if (typeof user['id'] != STRING_CONSTANTS.UNDEFINED) {
+            profileData['GPID'] = user['id'] + "";
         }
 
-        if (typeof user["gender"] != STRING_CONSTANTS.UNDEFINED) {
-            if (user["gender"] == "male") {
-                profileData["Gender"] = "M";
-            } else if (user["gender"] == "female") {
-                profileData["Gender"] = "F";
-            } else if (user["gender"] == "other") {
-                profileData["Gender"] = "O";
+        if (typeof user['gender'] != STRING_CONSTANTS.UNDEFINED) {
+            if (user['gender'] == "male") {
+                profileData['Gender'] = "M";
+            } else if (user['gender'] == "female") {
+                profileData['Gender'] = "F";
+            } else if (user['gender'] == "other") {
+                profileData['Gender'] = "O";
             }
         }
 
-        if (typeof user["image"] != STRING_CONSTANTS.UNDEFINED) {
-            if (user["image"]["isDefault"] == false) {
-                profileData["Photo"] = user["image"].url.split("?sz")[0];
+        if (typeof user['image'] != STRING_CONSTANTS.UNDEFINED) {
+            if (user['image']['isDefault'] == false) {
+                profileData['Photo'] = user['image'].url.split('?sz')[0];
             }
         }
 
-        if (typeof user["emails"] != "undefined") {
-            for (
-                var emailIdx = 0;
-                emailIdx < user["emails"].length;
-                emailIdx++
-            ) {
-                var emailObj = user["emails"][emailIdx];
-                if (emailObj.type == "account") {
-                    profileData["Email"] = emailObj.value;
+        if (typeof user['emails'] != "undefined") {
+            for (var emailIdx = 0; emailIdx < user['emails'].length; emailIdx++) {
+                var emailObj = user['emails'][emailIdx];
+                if (emailObj.type == 'account') {
+                    profileData['Email'] = emailObj.value;
                 }
             }
         }
 
-        if (typeof user["organizations"] != "undefined") {
-            profileData["Employed"] = "N";
-            for (var i = 0; i < user["organizations"].length; i++) {
-                var orgObj = user["organizations"][i];
-                if (orgObj.type == "work") {
-                    profileData["Employed"] = "Y";
+
+        if (typeof user['organizations'] != "undefined") {
+            profileData['Employed'] = 'N';
+            for (var i = 0; i < user['organizations'].length; i++) {
+                var orgObj = user['organizations'][i];
+                if (orgObj.type == 'work') {
+                    profileData['Employed'] = 'Y';
                 }
             }
         }
 
-        if (typeof user["birthday"] != STRING_CONSTANTS.UNDEFINED) {
-            var yyyymmdd = user["birthday"].split("-"); //comes in as "1976-07-27"
-            profileData["DOB"] = $WZRK_WR.setDate(
-                yyyymmdd[0] + yyyymmdd[1] + yyyymmdd[2]
-            );
+
+        if (typeof user['birthday'] != STRING_CONSTANTS.UNDEFINED) {
+            var yyyymmdd = user['birthday'].split('-'); //comes in as "1976-07-27"
+            profileData['DOB'] = $WZRK_WR.setDate(yyyymmdd[0] + yyyymmdd[1] + yyyymmdd[2]);
         }
 
-        if (typeof user["relationshipStatus"] != STRING_CONSTANTS.UNDEFINED) {
-            profileData["Married"] = "N";
-            if (user["relationshipStatus"] == "married") {
-                profileData["Married"] = "Y";
+
+        if (typeof user['relationshipStatus'] != STRING_CONSTANTS.UNDEFINED) {
+            profileData['Married'] = 'N';
+            if (user['relationshipStatus'] == 'married') {
+                profileData['Married'] = 'Y';
             }
         }
         wc.d("gplus usr profile " + JSON.stringify(profileData));
@@ -1433,17 +1090,17 @@ function __wizrocket() {
 
     wiz.processFBUserObj = function (user) {
         var profileData = {};
-        profileData["Name"] = user["name"];
-        if (typeof user["id"] != STRING_CONSTANTS.UNDEFINED) {
-            profileData["FBID"] = user["id"] + "";
+        profileData['Name'] = user['name'];
+        if (typeof user['id'] != STRING_CONSTANTS.UNDEFINED) {
+            profileData['FBID'] = user['id'] + "";
         }
         // Feb 2014 - FB announced over 58 gender options, hence we specifically look for male or female. Rest we don't care.
-        if (user["gender"] == "male") {
-            profileData["Gender"] = "M";
-        } else if (user["gender"] == "female") {
-            profileData["Gender"] = "F";
+        if (user['gender'] == "male") {
+            profileData['Gender'] = "M";
+        } else if (user['gender'] == "female") {
+            profileData['Gender'] = "F";
         } else {
-            profileData["Gender"] = "O";
+            profileData['Gender'] = "O";
         }
 
         var getHighestEducation = function (eduArr) {
@@ -1471,72 +1128,67 @@ function __wizrocket() {
                     return "School";
                 }
             }
+
         };
 
-        if (user["relationship_status"] != STRING_CONSTANTS.UNDEFINED) {
-            profileData["Married"] = "N";
-            if (user["relationship_status"] == "Married") {
-                profileData["Married"] = "Y";
+        if (user['relationship_status'] != STRING_CONSTANTS.UNDEFINED) {
+            profileData['Married'] = 'N';
+            if (user['relationship_status'] == 'Married') {
+                profileData['Married'] = 'Y';
             }
         }
 
-        var edu = getHighestEducation(user["education"]);
+        var edu = getHighestEducation(user['education']);
         if (typeof edu !== "undefined") {
-            profileData["Education"] = edu;
+            profileData['Education'] = edu;
         }
 
-        var work =
-            typeof user["work"] !== STRING_CONSTANTS.UNDEFINED
-                ? user["work"].length
-                : 0;
+        var work = (typeof user['work'] !== STRING_CONSTANTS.UNDEFINED) ? user['work'].length : 0;
         if (work > 0) {
-            profileData["Employed"] = "Y";
+            profileData['Employed'] = 'Y';
         } else {
-            profileData["Employed"] = "N";
+            profileData['Employed'] = 'N';
         }
 
-        if (typeof user["email"] !== "undefined") {
-            profileData["Email"] = user["email"];
+        if (typeof user['email'] !== "undefined") {
+            profileData['Email'] = user['email'];
         }
 
-        if (typeof user["birthday"] !== "undefined") {
-            var mmddyy = user["birthday"].split("/"); //comes in as "08/15/1947"
-            profileData["DOB"] = $WZRK_WR.setDate(
-                mmddyy[2] + mmddyy[0] + mmddyy[1]
-            );
+        if (typeof user['birthday'] !== "undefined") {
+            var mmddyy = user['birthday'].split('/'); //comes in as "08/15/1947"
+            profileData['DOB'] = $WZRK_WR.setDate(mmddyy[2] + mmddyy[0] + mmddyy[1]);
         }
         return profileData;
     };
 
+
     wiz.getEmail = function () {
-        wiz.handleEmailSubscription("-1");
+        wiz.handleEmailSubscription('-1');
     };
 
+
     wiz.unSubEmail = function () {
-        wiz.handleEmailSubscription("0");
+        wiz.handleEmailSubscription("0")
     };
 
     wiz.subEmail = function () {
-        wiz.handleEmailSubscription("1");
+        wiz.handleEmailSubscription("1")
     };
 
     wiz.handleEmailSubscription = function (subscription) {
-        var url_params_as_is = wzrk_util.getURLParams(location.href); // can't use url_params as it is in lowercase above
-        var encodedEmailId = url_params_as_is["e"];
+
+        var url_params_as_is = wzrk_util.getURLParams(location.href);  // can't use url_params as it is in lowercase above
+        var encodedEmailId = url_params_as_is['e'];
 
         if (typeof encodedEmailId !== STRING_CONSTANTS.UNDEFINED) {
             var data = {};
-            data["id"] = accountId; //accountId
+            data['id'] = accountId;  //accountId
 
             var url = emailURL;
             url = wiz.addToURL(url, "e", encodedEmailId);
-            url = wiz.addToURL(
-                url,
-                "d",
-                wiz.compressData(JSON.stringify(data))
-            );
+            url = wiz.addToURL(url, "d", wiz.compressData(JSON.stringify(data)));
 
-            if (subscription != "-1") {
+            if (subscription != '-1') {
                 url = wiz.addToURL(url, "sub", subscription);
             }
 
@@ -1544,31 +1196,29 @@ function __wizrocket() {
         }
     };
 
+
     wiz.reportError = function (code, desc) {
-        wzrk_error["c"] = code;
-        wzrk_error["d"] = desc;
+        wzrk_error['c'] = code;
+        wzrk_error['d'] = desc;
         wc.e(wzrk_error_txt + code + ": " + desc);
     };
 
+
     //to debug put this in the JS console -> sessionStorage['WZRK_D']="";
     wiz.isDebug = function () {
-        return (
-            typeof sessionStorage != STRING_CONSTANTS.UNDEFINED &&
-            sessionStorage["WZRK_D"] == ""
-        );
+        return ((typeof sessionStorage != STRING_CONSTANTS.UNDEFINED) && sessionStorage['WZRK_D'] == '');
     };
 
     wiz.isPingContinuous = function () {
-        return (
-            typeof wzrk_d != STRING_CONSTANTS.UNDEFINED &&
-            wzrk_d["ping"] == "continuous"
-        );
+        return ((typeof wzrk_d != STRING_CONSTANTS.UNDEFINED) && (wzrk_d['ping'] == 'continuous'));
     };
 
+
     wiz.compressData = function (dataObject) {
-        wc.d("dobj:" + dataObject);
+        wc.d('dobj:' + dataObject);
         return LZS.compressToBase64(dataObject);
     };
+
 
     wiz.addSystemDataToObject = function (dataObject, ignoreTrim) {
         // ignore trim for chrome notifications; undefined everywhere else
@@ -1576,25 +1226,25 @@ function __wizrocket() {
             dataObject = wzrk_util.removeUnsupportedChars(dataObject);
         }
         if (!wzrk_util.isObjectEmpty(wzrk_error)) {
-            dataObject["wzrk_error"] = wzrk_error;
+            dataObject['wzrk_error'] = wzrk_error;
             wzrk_error = {};
         }
 
-        dataObject["id"] = accountId;
+        dataObject['id'] = accountId;
 
         //Global cookie
         if (wiz.isValueValid(gcookie)) {
-            dataObject["g"] = gcookie;
+            dataObject['g'] = gcookie;
         }
 
         var obj = wiz.getSessionCookieObject();
 
-        dataObject["s"] = obj["s"]; //Session cookie
-        dataObject["pg"] =
-            typeof obj["p"] == STRING_CONSTANTS.UNDEFINED ? 1 : obj["p"]; //Page count
+        dataObject['s'] = obj['s'];                                                      //Session cookie
+        dataObject['pg'] = (typeof obj['p'] == STRING_CONSTANTS.UNDEFINED) ? 1 : obj['p'];                //Page count
 
         return dataObject;
     };
+
 
     wiz.getSessionCookieObject = function () {
         var scookieStr = wiz.readCookie(SCOOKIE_NAME);
@@ -1602,23 +1252,22 @@ function __wizrocket() {
 
         if (scookieStr != null) {
             // converting back single quotes to double for JSON parsing - http://www.iandevlin.com/blog/2012/04/html5/cookies-json-localstorage-and-opera
-            scookieStr = scookieStr.replace(singleQuoteRegex, '"');
+            scookieStr = scookieStr.replace(singleQuoteRegex, "\"");
 
             obj = JSON.parse(scookieStr);
             if (!wzrk_util.isObject(obj)) {
                 obj = {};
             } else {
-                if (typeof obj["t"] != STRING_CONSTANTS.UNDEFINED) {
-                    // check time elapsed since last request
-                    var lasttime = obj["t"];
+                if (typeof obj['t'] != STRING_CONSTANTS.UNDEFINED) {   // check time elapsed since last request
+                    var lasttime = obj['t'];
                     var now = wzrk_util.getNow();
-                    if (now - lasttime > SCOOKIE_EXP_TIME_IN_SECS + 60)
-                    // adding 60 seconds to compensate for in-journey requests
+                    if ((now - lasttime) > (SCOOKIE_EXP_TIME_IN_SECS + 60)) // adding 60 seconds to compensate for in-journey requests
 
                     //ideally the cookie should've died after SCOOKIE_EXP_TIME_IN_SECS but it's still around as we can read
                     //hence we shouldn't use it.
 
                         obj = {};
+
                 }
             }
         }
@@ -1626,15 +1275,13 @@ function __wizrocket() {
         return obj;
     };
 
+
     wiz.setSessionCookieObject = function (obj) {
+
         var objStr = JSON.stringify(obj);
 
-        wiz.createBroadCookie(
-            SCOOKIE_NAME,
-            objStr,
-            SCOOKIE_EXP_TIME_IN_SECS,
-            domain
-        );
+        wiz.createBroadCookie(SCOOKIE_NAME, objStr, SCOOKIE_EXP_TIME_IN_SECS, domain);
+
     };
 
     wiz.isValueValid = function (value) {
@@ -1655,67 +1302,53 @@ function __wizrocket() {
                 try {
                     guid = JSON.parse(decodeURIComponent(value));
                 } catch (e) {
-                    wc.d(
-                        "Cannot parse Gcookie from localstorage - must be encoded " +
-                        value
-                    );
+                    wc.d("Cannot parse Gcookie from localstorage - must be encoded " + value);
                     //assumming guids are of size 32. supporting both formats.
                     // guid can have encodedURIComponent or be without it.
                     // 1.56e4078ed15749928c042479ec2b4d47 - breaks on JSON.parse(decodeURIComponent())
                     // 2.%2256e4078ed15749928c042479ec2b4d47%22
                     if (value.length == 32) {
                         guid = value;
-                        wiz.saveToLSorCookie(
-                            STRING_CONSTANTS.GCOOKIE_NAME,
-                            value
-                        );
-                    } else {
+                        wiz.saveToLSorCookie(STRING_CONSTANTS.GCOOKIE_NAME, value);
+                    }else{
                         wc.e("Illegal guid " + value);
                     }
                 }
 
                 // Persist to cookie storage if not present there.
                 if (wiz.isValueValid(guid)) {
-                    wiz.createBroadCookie(
-                        STRING_CONSTANTS.GCOOKIE_NAME,
-                        guid,
-                        COOKIE_EXPIRY,
-                        domain
-                    );
+                    wiz.createBroadCookie(STRING_CONSTANTS.GCOOKIE_NAME, guid, COOKIE_EXPIRY, domain);
                 }
             }
         }
         if (!wiz.isValueValid(guid)) {
             guid = wiz.readCookie(STRING_CONSTANTS.GCOOKIE_NAME);
-            if (
-                wiz.isValueValid(guid) &&
-                (guid.indexOf("%") === 0 ||
-                    guid.indexOf("'") === 0 ||
-                    guid.indexOf('"') === 0)
-            ) {
+            if(wiz.isValueValid(guid) && (guid.indexOf('%') === 0 ||
+                guid.indexOf('\'') === 0 || guid.indexOf('"') === 0)){
                 guid = null;
             }
-            if (wiz.isValueValid(guid)) {
+            if (wiz.isValueValid(guid)){
                 wiz.saveToLSorCookie(STRING_CONSTANTS.GCOOKIE_NAME, guid);
             }
         }
 
         return guid;
+
     };
 
     wiz.g = function () {
+
         gcookie = wiz.getGuid();
 
+
         if (wzrk_util.isLocalStorageSupported()) {
-            currentSessionId = wiz.getMetaProp("cs");
+            currentSessionId = wiz.getMetaProp('cs');
         }
     };
 
     wiz.setMetaProp = function (key, value) {
         if (wzrk_util.isLocalStorageSupported()) {
-            var wzrkMetaObj = wiz.readFromLSorCookie(
-                STRING_CONSTANTS.META_COOKIE
-            );
+            var wzrkMetaObj = wiz.readFromLSorCookie(STRING_CONSTANTS.META_COOKIE);
             if (typeof wzrkMetaObj == STRING_CONSTANTS.UNDEFINED) {
                 wzrkMetaObj = {};
             }
@@ -1728,11 +1361,10 @@ function __wizrocket() {
         }
     };
 
+
     wiz.getMetaProp = function (key) {
         if (wzrk_util.isLocalStorageSupported()) {
-            var wzrkMetaObj = wiz.readFromLSorCookie(
-                STRING_CONSTANTS.META_COOKIE
-            );
+            var wzrkMetaObj = wiz.readFromLSorCookie(STRING_CONSTANTS.META_COOKIE);
             if (typeof wzrkMetaObj != STRING_CONSTANTS.UNDEFINED) {
                 return wzrkMetaObj[key];
             }
@@ -1747,35 +1379,34 @@ function __wizrocket() {
     wiz.manageSession = function (session) {
         //first time. check if current session id in localstorage is same
         //if not same then prev = current and current = this new session
-        if (
-            typeof currentSessionId === STRING_CONSTANTS.UNDEFINED ||
-            currentSessionId !== session
-        ) {
-            var currentSessionInLS = wiz.getMetaProp("cs");
+        if (typeof currentSessionId === STRING_CONSTANTS.UNDEFINED || currentSessionId !== session) {
+            var currentSessionInLS = wiz.getMetaProp('cs');
             //if sessionId in meta is undefined - set current to both
             if (typeof currentSessionInLS === STRING_CONSTANTS.UNDEFINED) {
-                wiz.setMetaProp("ps", session);
-                wiz.setMetaProp("cs", session);
-                wiz.setMetaProp("sc", 1);
+                wiz.setMetaProp('ps', session);
+                wiz.setMetaProp('cs', session);
+                wiz.setMetaProp('sc', 1);
             }
             //not same as session in local storage. new session
             else if (currentSessionInLS !== session) {
-                wiz.setMetaProp("ps", currentSessionInLS);
-                wiz.setMetaProp("cs", session);
-                var sessionCount = wiz.getMetaProp("sc");
+                wiz.setMetaProp('ps', currentSessionInLS);
+                wiz.setMetaProp('cs', session);
+                var sessionCount = wiz.getMetaProp('sc');
                 if (typeof sessionCount === STRING_CONSTANTS.UNDEFINED) {
                     sessionCount = 0;
                 }
-                wiz.setMetaProp("sc", sessionCount + 1);
+                wiz.setMetaProp('sc', sessionCount + 1);
             }
             currentSessionId = session;
         }
     };
 
+
     // call back function used to store global and session ids for the user
     //resume - this is used to signal that we can resume sending events to server
     // was waiting for the server to reset the cookie. everything was getting written to cookie
     wiz.s = function (global, session, resume, respNumber, optOutResponse) {
+
         if (typeof respNumber === "undefined") {
             respNumber = 0;
         }
@@ -1787,50 +1418,16 @@ function __wizrocket() {
             return;
         }
 
-        if (
-            !wiz.isValueValid(gcookie) ||
-            resume ||
-            typeof optOutResponse === "boolean"
-        ) {
-            if (!wiz.isValueValid(gcookie)) {
+        if (!wiz.isValueValid(gcookie) || resume || typeof optOutResponse === 'boolean') {
+            if(!wiz.isValueValid(gcookie)){
                 //clear useIP meta prop
                 wiz.getAndClearMetaProp(STRING_CONSTANTS.USEIP_KEY);
             }
             wc.d("Cookie was " + gcookie + " set to " + global);
             gcookie = global;
             // global cookie
-            wiz.createBroadCookie(
-                STRING_CONSTANTS.GCOOKIE_NAME,
-                global,
-                COOKIE_EXPIRY,
-                domain
-            );
-
-            if (global) {
-                LRU_CACHE = new wiz.LRU_cache(LRU_CACHE_SIZE);
-                var k_from_LS = wiz.readFromLSorCookie(
-                    STRING_CONSTANTS.KCOOKIE_NAME
-                );
-                if (k_from_LS != null && k_from_LS["id"].length) {
-                    var guidFromLRUCache = LRU_CACHE.getKEY(k_from_LS["id"][0]);
-                    if (!guidFromLRUCache) {
-                        wiz.saveToLSorCookie(
-                            STRING_CONSTANTS.GCOOKIE_NAME,
-                            global
-                        );
-                        LRU_CACHE.set(global, k_from_LS["id"][0]);
-                        getLS();
-                    }
-                } else {
-                    wiz.saveToLSorCookie(STRING_CONSTANTS.GCOOKIE_NAME, global);
-                    LRU_CACHE.set(global, null);
-                }
-
-                var lastGUID = LRU_CACHE.getSecondLastKEY();
-                if (lastGUID != -1) {
-                    wiz.unregisterTokenForGuid(lastGUID);
-                }
-            }
+            wiz.createBroadCookie(STRING_CONSTANTS.GCOOKIE_NAME, global, COOKIE_EXPIRY, domain);
+            wiz.saveToLSorCookie(STRING_CONSTANTS.GCOOKIE_NAME, global);
         }
 
         if (resume) {
@@ -1847,47 +1444,47 @@ function __wizrocket() {
         // for the race-condition where two responses come back with different session ids. don't write the older session id.
         if (typeof obj["s"] == "undefined" || obj["s"] <= session) {
             obj["s"] = session;
-            obj["t"] = wzrk_util.getNow(); // time of last response from server
+            obj["t"] = wzrk_util.getNow();  // time of last response from server
             wiz.setSessionCookieObject(obj);
         }
+
 
         if (resume && !processingBackup) {
             wiz.processBackupEvents();
         }
 
         RESP_N = respNumber;
+
     };
 
     wiz.processBackupEvents = function () {
+
         var backupMap = wiz.readFromLSorCookie(STRING_CONSTANTS.LCOOKIE_NAME);
-        if (typeof backupMap == "undefined" || backupMap == null) {
+        if (typeof backupMap == 'undefined' || backupMap == null) {
             return;
         }
         processingBackup = true;
         for (var idx in backupMap) {
             if (backupMap.hasOwnProperty(idx)) {
                 var backupEvent = backupMap[idx];
-                if (typeof backupEvent["fired"] == "undefined") {
-                    wc.d("Processing backup event : " + backupEvent["q"]);
-                    if (typeof backupEvent["q"] != "undefined") {
-                        wiz.fireRequest(backupEvent["q"]);
+                if (typeof backupEvent['fired'] == 'undefined') {
+                    wc.d("Processing backup event : " + backupEvent['q']);
+                    if (typeof backupEvent['q'] != 'undefined') {
+                        wiz.fireRequest(backupEvent['q']);
                     }
-                    backupEvent["fired"] = true;
+                    backupEvent['fired'] = true;
                 }
             }
         }
         wiz.saveToLSorCookie(STRING_CONSTANTS.LCOOKIE_NAME, backupMap);
         processingBackup = false;
+
     };
 
     wiz.removeBackup = function (respNo) {
         var backupMap = wiz.readFromLSorCookie(STRING_CONSTANTS.LCOOKIE_NAME);
-        if (
-            typeof backupMap != "undefined" &&
-            backupMap != null &&
-            typeof backupMap[respNo] != "undefined"
-        ) {
-            wc.d("del event: " + respNo + " data->" + backupMap[respNo]["q"]);
+        if (typeof backupMap != 'undefined' && backupMap != null && typeof backupMap[respNo] != 'undefined') {
+            wc.d("del event: " + respNo + " data->" + backupMap[respNo]['q']);
             delete backupMap[respNo];
             wiz.saveToLSorCookie(STRING_CONSTANTS.LCOOKIE_NAME, backupMap);
         }
@@ -1895,31 +1492,27 @@ function __wizrocket() {
 
     wiz.backUpEvent = function (data, reqNo) {
         var backupArr = wiz.readFromLSorCookie(STRING_CONSTANTS.LCOOKIE_NAME);
-        if (typeof backupArr == "undefined") {
+        if (typeof backupArr == 'undefined') {
             backupArr = {};
         }
-        backupArr[reqNo] = {q: data};
+        backupArr[reqNo] = {'q': data};
         wiz.saveToLSorCookie(STRING_CONSTANTS.LCOOKIE_NAME, backupArr);
-        wc.d(
-            "stored in " +
-            STRING_CONSTANTS.LCOOKIE_NAME +
-            " reqNo : " +
-            reqNo +
-            "-> " +
-            data
-        );
+        wc.d("stored in " + STRING_CONSTANTS.LCOOKIE_NAME + " reqNo : " + reqNo + "-> " + data);
+
     };
 
     // sets cookie on the base domain. e.g. if domain is baz.foo.bar.com, set cookie on ".bar.com"
     wiz.createBroadCookie = function (name, value, seconds, domain) {
+
+
         //To update an existing "broad domain" cookie, we need to know what domain it was actually set on.
         //since a retrieved cookie never tells which domain it was set on, we need to set another test cookie
         //to find out which "broadest" domain the cookie was set on. Then delete the test cookie, and use that domain
         //for updating the actual cookie.
 
+
         if (domain) {
-            if (typeof broadDomain == STRING_CONSTANTS.UNDEFINED) {
-                // if we don't know the broadDomain yet, then find out
+            if (typeof broadDomain == STRING_CONSTANTS.UNDEFINED) {  // if we don't know the broadDomain yet, then find out
                 var domainParts = domain.split(".");
                 var testBroadDomain = "";
                 for (var idx = domainParts.length - 1; idx >= 0; idx--) {
@@ -1927,19 +1520,13 @@ function __wizrocket() {
 
                     // only needed if the cookie already exists and needs to be updated. See note above.
                     if (wiz.readCookie(name)) {
+
                         // no guarantee that browser will delete cookie, hence create short lived cookies
                         var testCookieName = "test_" + name + idx;
-                        wiz.createCookie(
-                            testCookieName,
-                            value,
-                            10,
-                            testBroadDomain
-                        ); // self-destruct after 10 seconds
-                        if (!wiz.readCookie(testCookieName)) {
-                            // if test cookie not set, then the actual cookie wouldn't have been set on this domain either.
+                        wiz.createCookie(testCookieName, value, 10, testBroadDomain); // self-destruct after 10 seconds
+                        if (!wiz.readCookie(testCookieName)) {  // if test cookie not set, then the actual cookie wouldn't have been set on this domain either.
                             continue;
-                        } else {
-                            // else if cookie set, then delete the test and the original cookie
+                        } else {                                // else if cookie set, then delete the test and the original cookie
                             wiz.deleteCookie(testCookieName, testBroadDomain);
                         }
                     }
@@ -1967,7 +1554,7 @@ function __wizrocket() {
         var domainStr = "";
         if (seconds) {
             var date = new Date();
-            date.setTime(date.getTime() + seconds * 1000);
+            date.setTime(date.getTime() + (seconds * 1000));
 
             expires = "; expires=" + date.toGMTString();
         }
@@ -1983,10 +1570,10 @@ function __wizrocket() {
 
     wiz.readCookie = function readCookie(name) {
         var nameEQ = name + "=";
-        var ca = document.cookie.split(";");
+        var ca = document.cookie.split(';');
         for (var idx = 0; idx < ca.length; idx++) {
             var c = ca[idx];
-            while (c.charAt(0) == " ") {
+            while (c.charAt(0) == ' ') {
                 c = c.substring(1, c.length);
             }
             if (c.indexOf(nameEQ) == 0) {
@@ -1997,7 +1584,7 @@ function __wizrocket() {
     };
 
     wiz.deleteCookie = function (name, domain) {
-        var cookieStr = name + "=; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        var cookieStr = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 
         if (domain) {
             cookieStr = cookieStr + " domain=" + domain + "; path=/";
@@ -2006,6 +1593,7 @@ function __wizrocket() {
         document.cookie = cookieStr;
     };
 
+
     wiz.addToURL = function (url, k, v) {
         return url + "&" + k + "=" + encodeURIComponent(v);
     };
@@ -2013,15 +1601,11 @@ function __wizrocket() {
     var MAX_TRIES = 50;
 
     var fireRequest = function (url, tries) {
-        if (dropRequestDueToOptOut()) {
+        if(dropRequestDueToOptOut()){
             wc.d("req dropped due to optout cookie: " + gcookie);
             return;
         }
-        if (
-            !wiz.isValueValid(gcookie) &&
-            RESP_N < REQ_N - 1 &&
-            tries < MAX_TRIES
-        ) {
+        if (!wiz.isValueValid(gcookie) && (RESP_N < REQ_N - 1) && tries < MAX_TRIES) {
             setTimeout(function () {
                 fireRequest(url, tries + 1);
             }, 50);
@@ -2035,15 +1619,14 @@ function __wizrocket() {
         url = wiz.addARPToRequest(url);
         // url = addUseIPToRequest(url);
         url = wiz.addToURL(url, "r", new Date().getTime()); // add epoch to beat caching of the URL
-        if (wizrocket.hasOwnProperty("plugin")) {
-            //used to add plugin name in request parameter
+        if (wizrocket.hasOwnProperty("plugin")) { //used to add plugin name in request parameter
             var plugin = wizrocket["plugin"];
             url = wiz.addToURL(url, "ct_pl", plugin);
         }
         if (url.indexOf("chrome-extension:") != -1) {
-            url = url.replace("chrome-extension:", "https:");
+            url = url.replace('chrome-extension:', 'https:');
         }
-        var s = doc.createElement("script");
+        var s = doc.createElement('script');
         s.setAttribute("type", "text/javascript");
         s.setAttribute("src", url);
         s.setAttribute("rel", "nofollow");
@@ -2058,10 +1641,7 @@ function __wizrocket() {
     };
 
     wiz.closeIframe = function (campaignId, divIdIgnored) {
-        if (
-            typeof campaignId != STRING_CONSTANTS.UNDEFINED &&
-            campaignId != "-1"
-        ) {
+        if (typeof campaignId != STRING_CONSTANTS.UNDEFINED && campaignId != '-1') {
             if (wzrk_util.isLocalStorageSupported()) {
                 var campaignObj = wzrk_util.getCampaignObject();
 
@@ -2070,7 +1650,7 @@ function __wizrocket() {
                     sessionCampaignObj = {};
                     campaignObj[currentSessionId] = sessionCampaignObj;
                 }
-                sessionCampaignObj[campaignId] = "dnd";
+                sessionCampaignObj[campaignId] = 'dnd';
                 wzrk_util.saveCampaignObject(campaignObj);
             }
         }
@@ -2078,15 +1658,15 @@ function __wizrocket() {
             var divId = campaignDivMap[campaignId];
             if (typeof divId != STRING_CONSTANTS.UNDEFINED) {
                 document.getElementById(divId).style.display = "none";
-                if (divId == "intentPreview") {
-                    if (document.getElementById("intentOpacityDiv") != null) {
-                        document.getElementById(
-                            "intentOpacityDiv"
-                        ).style.display = "none";
+                if (divId == 'intentPreview') {
+                    if (document.getElementById('intentOpacityDiv') != null) {
+                        document.getElementById('intentOpacityDiv').style.display = "none";
                     }
                 }
             }
         }
+
+
     };
 
     // helper variable to handle race condition and check when notifications were called
@@ -2100,20 +1680,18 @@ function __wizrocket() {
     wiz.setUpWebPush = function (displayArgs) {
         if (webPushEnabled && displayArgs.length > 0) {
             wiz.handleNotificationRegistration(displayArgs);
-        } else if (
-            typeof webPushEnabled === STRING_CONSTANTS.UNDEFINED &&
-            displayArgs.length > 0
-        ) {
+        } else if (typeof webPushEnabled === STRING_CONSTANTS.UNDEFINED && displayArgs.length > 0) {
             notifApi.notifEnabledFromApi = true;
             notifApi.displayArgs = displayArgs.slice();
         } else if (webPushEnabled === false && displayArgs.length > 0) {
-            wc.e(
-                "Make sure push notifications are fully enabled and integrated"
-            );
+            wc.e('Make sure push notifications are fully enabled and integrated');
         }
+
     };
 
+
     wiz.handleNotificationRegistration = function (displayArgs) {
+
         // make sure everything is specified
         var titleText;
         var bodyText;
@@ -2155,7 +1733,7 @@ function __wizrocket() {
             rejectButtonText = displayArgs[3];
             okButtonColor = displayArgs[4];
             skipDialog = displayArgs[5];
-            askAgainTimeInSeconds = displayArgs[6];
+            askAgainTimeInSeconds = displayArgs[6]
         }
 
         if (typeof skipDialog === "undefined") {
@@ -2167,7 +1745,7 @@ function __wizrocket() {
         }
 
         if (typeof serviceWorkerPath === "undefined") {
-            serviceWorkerPath = "/clevertap_sw.js";
+            serviceWorkerPath = '/clevertap_sw.js';
         }
 
         // ensure that the browser supports notifications
@@ -2178,29 +1756,18 @@ function __wizrocket() {
         // var isHTTP = location.protocol === 'http:' && typeof httpsPopupPath !== "undefined" &&
         //     typeof httpsIframePath !== "undefined";
 
-        var isHTTP =
-            typeof httpsPopupPath !== "undefined" &&
-            typeof httpsIframePath !== "undefined";
+        var isHTTP = typeof httpsPopupPath !== "undefined" && typeof httpsIframePath !== "undefined";
 
         // make sure the site is on https for chrome notifications
-        if (
-            location.protocol !== "https:" &&
-            document.location.hostname !== "localhost" &&
-            !isHTTP
-        ) {
-            wc.e(
-                "Make sure you are https or localhost to register for notifications"
-            );
+        if (location.protocol !== 'https:' && document.location.hostname !== 'localhost' && !isHTTP) {
+            wc.e("Make sure you are https or localhost to register for notifications");
             return;
         }
 
         // right now, we only support chrome v50 or higher
-        if (navigator.userAgent.indexOf("Chrome") !== -1) {
+        if (navigator.userAgent.indexOf('Chrome') !== -1) {
             var chromeAgent = navigator.userAgent.match(/Chrome\/(\d+)/);
-            if (
-                typeof chromeAgent === STRING_CONSTANTS.UNDEFINED ||
-                parseInt(chromeAgent[1], 10) < 50
-            )
+            if (typeof chromeAgent === STRING_CONSTANTS.UNDEFINED || parseInt(chromeAgent[1], 10) < 50)
                 return;
         } else {
             return;
@@ -2209,182 +1776,133 @@ function __wizrocket() {
         // we check for the cookie in setUpChromeNotifications(); the tokens may have changed
 
         if (!isHTTP) {
-            if (typeof Notification === STRING_CONSTANTS.UNDEFINED) {
+            if(typeof Notification === STRING_CONSTANTS.UNDEFINED){
                 return;
             }
             // handle migrations from other services -> chrome notifications may have already been asked for before
-            if (Notification.permission === "granted") {
+            if (Notification.permission === 'granted') {
                 // skip the dialog and register
-                wiz.setUpChromeNotifications(
-                    subscriptionCallback,
-                    serviceWorkerPath
-                );
+                wiz.setUpChromeNotifications(subscriptionCallback, serviceWorkerPath);
                 return;
-            } else if (Notification.permission === "denied") {
+            } else if (Notification.permission === 'denied') {
                 // we've lost this profile :'(
                 return;
             }
 
             if (skipDialog) {
-                wiz.setUpChromeNotifications(
-                    subscriptionCallback,
-                    serviceWorkerPath
-                );
+                wiz.setUpChromeNotifications(subscriptionCallback, serviceWorkerPath);
                 return;
             }
         }
 
         // make sure the right parameters are passed
         if (!titleText || !bodyText || !okButtonText || !rejectButtonText) {
-            wc.e(
-                "Missing input parameters; please specify title, body, ok button and cancel button text"
-            );
+            wc.e('Missing input parameters; please specify title, body, ok button and cancel button text');
             return;
         }
 
         // make sure okButtonColor is formatted properly
-        if (
-            typeof okButtonColor === STRING_CONSTANTS.UNDEFINED ||
-            !okButtonColor.match(/^#[a-f\d]{6}$/i)
-        ) {
+        if (typeof okButtonColor === STRING_CONSTANTS.UNDEFINED || !okButtonColor.match(/^#[a-f\d]{6}$/i)) {
             okButtonColor = "#f28046"; // default color for positive button
         }
 
         // make sure the user isn't asked for notifications more than askAgainTimeInSeconds
         var now = new Date().getTime() / 1000;
-        if (
-            typeof wiz.getMetaProp("notif_last_time") ===
-            STRING_CONSTANTS.UNDEFINED
-        ) {
-            wiz.setMetaProp("notif_last_time", now);
+        if (typeof(wiz.getMetaProp('notif_last_time')) === STRING_CONSTANTS.UNDEFINED) {
+            wiz.setMetaProp('notif_last_time', now);
         } else {
             if (typeof askAgainTimeInSeconds === "undefined") {
                 // 7 days by default
                 askAgainTimeInSeconds = 7 * 24 * 60 * 60;
             }
 
-            if (
-                now - wiz.getMetaProp("notif_last_time") <
-                askAgainTimeInSeconds
-            ) {
+            if (now - wiz.getMetaProp('notif_last_time') < askAgainTimeInSeconds) {
                 return;
             } else {
                 // continue asking
-                wiz.setMetaProp("notif_last_time", now);
+                wiz.setMetaProp('notif_last_time', now);
             }
         }
 
         if (isHTTP) {
             //add the https iframe
-            var httpsIframe = document.createElement("iframe");
-            httpsIframe.setAttribute("style", "display:none;");
-            httpsIframe.setAttribute("src", httpsIframePath);
+            var httpsIframe = document.createElement('iframe');
+            httpsIframe.setAttribute('style', 'display:none;');
+            httpsIframe.setAttribute('src', httpsIframePath);
             document.body.appendChild(httpsIframe);
-            window.addEventListener(
-                "message",
-                function (event) {
-                    if (typeof event["data"] !== "undefined") {
-                        try {
-                            var obj = JSON.parse(event["data"]);
-                        } catch (e) {
-                            //not a call from our iframe
-                            return;
-                        }
-                        if (typeof obj["state"] !== "undefined") {
-                            if (
-                                obj["from"] === "ct" &&
-                                obj["state"] === "not"
-                            ) {
-                                wiz.addWizAlertJS().onload = function () {
-                                    // create our wizrocket popup
-                                    wzrkPermissionPopup["wizAlert"](
-                                        {
-                                            title: titleText,
-                                            body: bodyText,
-                                            confirmButtonText: okButtonText,
-                                            confirmButtonColor: okButtonColor,
-                                            rejectButtonText: rejectButtonText,
-                                            hidePoweredByCT: hidePoweredByCT
-                                        },
-                                        function (enabled) {
-                                            // callback function
-                                            if (enabled) {
-                                                // the user accepted on the dialog box
-                                                if (
-                                                    typeof okCallback !==
-                                                    "undefined" &&
-                                                    typeof okCallback ===
-                                                    "function"
-                                                ) {
-                                                    okCallback();
-                                                }
-                                                //redirect to popup.html
-                                                window.open(httpsPopupPath);
-                                            } else {
-                                                if (
-                                                    typeof rejectCallback !==
-                                                    "undefined" &&
-                                                    typeof rejectCallback ===
-                                                    "function"
-                                                ) {
-                                                    rejectCallback();
-                                                }
-                                            }
-                                            wiz.removeWizAlertJS();
+            window.addEventListener("message", function (event) {
+                if (typeof event['data'] !== "undefined") {
+                    try {
+                        var obj = JSON.parse(event['data']);
+                    } catch (e) {
+                        //not a call from our iframe
+                        return;
+                    }
+                    if (typeof obj['state'] !== "undefined") {
+                        if (obj['from'] === "ct" && obj['state'] === "not") {
+                            wiz.addWizAlertJS().onload = function () {
+                                // create our wizrocket popup
+                                wzrkPermissionPopup['wizAlert']({
+                                    'title': titleText,
+                                    'body': bodyText,
+                                    'confirmButtonText': okButtonText,
+                                    'confirmButtonColor': okButtonColor,
+                                    'rejectButtonText': rejectButtonText,
+                                    'hidePoweredByCT': hidePoweredByCT
+                                }, function (enabled) { // callback function
+                                    if (enabled) {
+                                        // the user accepted on the dialog box
+                                        if (typeof okCallback !== "undefined" && typeof okCallback === "function") {
+                                            okCallback();
                                         }
-                                    );
-                                };
+                                        //redirect to popup.html
+                                        window.open(httpsPopupPath);
+                                    } else {
+                                        if (typeof rejectCallback !== "undefined" && typeof rejectCallback === "function") {
+                                            rejectCallback();
+                                        }
+                                    }
+                                    wiz.removeWizAlertJS();
+                                });
                             }
                         }
                     }
-                    // console.log(event.origin);
-                },
-                false
-            );
+                }
+                // console.log(event.origin);
+            }, false);
         } else {
             wiz.addWizAlertJS().onload = function () {
                 // create our wizrocket popup
-                wzrkPermissionPopup["wizAlert"](
-                    {
-                        title: titleText,
-                        body: bodyText,
-                        confirmButtonText: okButtonText,
-                        confirmButtonColor: okButtonColor,
-                        rejectButtonText: rejectButtonText,
-                        hidePoweredByCT: hidePoweredByCT
-                    },
-                    function (enabled) {
-                        // callback function
-                        if (enabled) {
-                            // the user accepted on the dialog box
-                            if (
-                                typeof okCallback !== "undefined" &&
-                                typeof okCallback === "function"
-                            ) {
-                                okCallback();
-                            }
-                            wiz.setUpChromeNotifications(
-                                subscriptionCallback,
-                                serviceWorkerPath
-                            );
-                        } else {
-                            if (
-                                typeof rejectCallback !== "undefined" &&
-                                typeof rejectCallback === "function"
-                            ) {
-                                rejectCallback();
-                            }
+                wzrkPermissionPopup['wizAlert']({
+                    'title': titleText,
+                    'body': bodyText,
+                    'confirmButtonText': okButtonText,
+                    'confirmButtonColor': okButtonColor,
+                    'rejectButtonText': rejectButtonText,
+                    'hidePoweredByCT': hidePoweredByCT
+                }, function (enabled) { // callback function
+                    if (enabled) {
+                        // the user accepted on the dialog box
+                        if (typeof okCallback !== "undefined" && typeof okCallback === "function") {
+                            okCallback();
                         }
-                        wiz.removeWizAlertJS();
+                        wiz.setUpChromeNotifications(subscriptionCallback, serviceWorkerPath);
+                    } else {
+                        if (typeof rejectCallback !== "undefined" && typeof rejectCallback === "function") {
+                            rejectCallback();
+                        }
                     }
-                );
-            };
+                    wiz.removeWizAlertJS();
+                });
+            }
         }
     };
 
     wiz.tr = function (msg) {
+
         var doCampHouseKeeping = function (targetingMsgJson) {
-            var campaignId = targetingMsgJson["wzrk_id"].split("_")[0];
+
+            var campaignId = targetingMsgJson['wzrk_id'].split('_')[0];
             var today = wzrk_util.getToday();
 
             if (wzrk_util.isLocalStorageSupported()) {
@@ -2392,115 +1910,66 @@ function __wizrocket() {
                 var campObj = wzrk_util.getCampaignObject();
 
                 //global session limit. default is 1
-                if (
-                    typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]["wmc"] ==
-                    STRING_CONSTANTS.UNDEFINED
-                ) {
-                    targetingMsgJson[STRING_CONSTANTS.DISPLAY]["wmc"] = 1;
+                if (typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]['wmc'] == STRING_CONSTANTS.UNDEFINED) {
+                    targetingMsgJson[STRING_CONSTANTS.DISPLAY]['wmc'] = 1;
                 }
-                var excludeFromFreqCaps = -1,
-                    campaignSessionLimit = -1,
-                    campaignDailyLimit = -1,
-                    campaignTotalLimit = -1,
-                    totalDailyLimit = -1,
-                    totalSessionLimit = -1;
-                if (
-                    typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]["efc"] !=
-                    STRING_CONSTANTS.UNDEFINED
-                ) {
-                    excludeFromFreqCaps = parseInt(
-                        targetingMsgJson[STRING_CONSTANTS.DISPLAY]["efc"],
-                        10
-                    );
+                var excludeFromFreqCaps = -1, campaignSessionLimit = -1, campaignDailyLimit = -1, campaignTotalLimit = -1,
+                    totalDailyLimit = -1, totalSessionLimit = -1;
+                if (typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]['efc'] != STRING_CONSTANTS.UNDEFINED) {
+                    excludeFromFreqCaps = parseInt(targetingMsgJson[STRING_CONSTANTS.DISPLAY]['efc'], 10);
                 }
-                if (
-                    typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]["mdc"] !=
-                    STRING_CONSTANTS.UNDEFINED
-                ) {
-                    campaignSessionLimit = parseInt(
-                        targetingMsgJson[STRING_CONSTANTS.DISPLAY]["mdc"],
-                        10
-                    );
+                if (typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]['mdc'] != STRING_CONSTANTS.UNDEFINED) {
+                    campaignSessionLimit = parseInt(targetingMsgJson[STRING_CONSTANTS.DISPLAY]['mdc'], 10);
                 }
-                if (
-                    typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]["tdc"] !=
-                    STRING_CONSTANTS.UNDEFINED
-                ) {
-                    campaignDailyLimit = parseInt(
-                        targetingMsgJson[STRING_CONSTANTS.DISPLAY]["tdc"],
-                        10
-                    );
+                if (typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]['tdc'] != STRING_CONSTANTS.UNDEFINED) {
+                    campaignDailyLimit = parseInt(targetingMsgJson[STRING_CONSTANTS.DISPLAY]['tdc'], 10);
                 }
-                if (
-                    typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]["tlc"] !=
-                    STRING_CONSTANTS.UNDEFINED
-                ) {
-                    campaignTotalLimit = parseInt(
-                        targetingMsgJson[STRING_CONSTANTS.DISPLAY]["tlc"],
-                        10
-                    );
+                if (typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]['tlc'] != STRING_CONSTANTS.UNDEFINED) {
+                    campaignTotalLimit = parseInt(targetingMsgJson[STRING_CONSTANTS.DISPLAY]['tlc'], 10);
                 }
-                if (
-                    typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]["wmp"] !=
-                    STRING_CONSTANTS.UNDEFINED
-                ) {
-                    totalDailyLimit = parseInt(
-                        targetingMsgJson[STRING_CONSTANTS.DISPLAY]["wmp"],
-                        10
-                    );
+                if (typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]['wmp'] != STRING_CONSTANTS.UNDEFINED) {
+                    totalDailyLimit = parseInt(targetingMsgJson[STRING_CONSTANTS.DISPLAY]['wmp'], 10);
                 }
-                if (
-                    typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]["wmc"] !=
-                    STRING_CONSTANTS.UNDEFINED
-                ) {
-                    totalSessionLimit = parseInt(
-                        targetingMsgJson[STRING_CONSTANTS.DISPLAY]["wmc"],
-                        10
-                    );
+                if (typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]['wmc'] != STRING_CONSTANTS.UNDEFINED) {
+                    totalSessionLimit = parseInt(targetingMsgJson[STRING_CONSTANTS.DISPLAY]['wmc'], 10);
                 }
 
+
                 function incrCount(obj, campaignId, excludeFromFreqCaps) {
-                    var currentCount = 0,
-                        totalCount = 0;
+                    var currentCount = 0, totalCount = 0;
                     if (typeof obj[campaignId] != STRING_CONSTANTS.UNDEFINED) {
                         currentCount = obj[campaignId];
                     }
                     currentCount++;
-                    if (typeof obj["tc"] != STRING_CONSTANTS.UNDEFINED) {
-                        totalCount = obj["tc"];
+                    if (typeof obj['tc'] != STRING_CONSTANTS.UNDEFINED) {
+                        totalCount = obj['tc'];
                     }
                     //if exclude from caps then dont add to total counts
                     if (excludeFromFreqCaps < 0) {
                         totalCount++;
                     }
 
-                    obj["tc"] = totalCount;
+                    obj['tc'] = totalCount;
                     obj[campaignId] = currentCount;
                 }
+
 
                 //session level capping
                 var sessionObj = campObj[currentSessionId];
                 if (typeof sessionObj != STRING_CONSTANTS.UNDEFINED) {
                     var campaignSessionCount = sessionObj[campaignId];
-                    var totalSessionCount = sessionObj["tc"];
+                    var totalSessionCount = sessionObj['tc'];
                     //dnd
-                    if (campaignSessionCount == "dnd") {
+                    if (campaignSessionCount == 'dnd') {
                         return false;
                     }
 
                     //session
-                    if (
-                        totalSessionLimit > 0 &&
-                        totalSessionCount >= totalSessionLimit &&
-                        excludeFromFreqCaps < 0
-                    ) {
+                    if (totalSessionLimit > 0 && totalSessionCount >= totalSessionLimit && excludeFromFreqCaps < 0) {
                         return false;
                     }
                     //campaign session
-                    if (
-                        campaignSessionLimit > 0 &&
-                        campaignSessionCount >= campaignSessionLimit
-                    ) {
+                    if (campaignSessionLimit > 0 && campaignSessionCount >= campaignSessionLimit) {
                         return false;
                     }
                 } else {
@@ -2512,20 +1981,13 @@ function __wizrocket() {
                 var dailyObj = campObj[today];
                 if (typeof dailyObj != STRING_CONSTANTS.UNDEFINED) {
                     var campaignDailyCount = dailyObj[campaignId];
-                    var totalDailyCount = dailyObj["tc"];
+                    var totalDailyCount = dailyObj['tc'];
                     //daily
-                    if (
-                        totalDailyLimit > 0 &&
-                        totalDailyCount >= totalDailyLimit &&
-                        excludeFromFreqCaps < 0
-                    ) {
+                    if (totalDailyLimit > 0 && totalDailyCount >= totalDailyLimit && excludeFromFreqCaps < 0) {
                         return false;
                     }
                     //campaign daily
-                    if (
-                        campaignDailyLimit > 0 &&
-                        campaignDailyCount >= campaignDailyLimit
-                    ) {
+                    if (campaignDailyLimit > 0 && campaignDailyCount >= campaignDailyLimit) {
                         return false;
                     }
                 } else {
@@ -2537,25 +1999,20 @@ function __wizrocket() {
                 if (typeof globalObj != STRING_CONSTANTS.UNDEFINED) {
                     var campaignTotalCount = globalObj[campaignId];
                     //campaign total
-                    if (
-                        campaignTotalLimit > 0 &&
-                        campaignTotalCount >= campaignTotalLimit
-                    ) {
+                    if (campaignTotalLimit > 0 && campaignTotalCount >= campaignTotalLimit) {
                         return false;
                     }
                 } else {
                     globalObj = {};
                     campObj[STRING_CONSTANTS.GLOBAL] = globalObj;
                 }
+
+
             }
             //delay
-            if (
-                typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]["delay"] !=
-                STRING_CONSTANTS.UNDEFINED &&
-                targetingMsgJson[STRING_CONSTANTS.DISPLAY]["delay"] > 0
-            ) {
-                var delay = targetingMsgJson[STRING_CONSTANTS.DISPLAY]["delay"];
-                targetingMsgJson[STRING_CONSTANTS.DISPLAY]["delay"] = 0;
+            if (typeof targetingMsgJson[STRING_CONSTANTS.DISPLAY]['delay'] != STRING_CONSTANTS.UNDEFINED && targetingMsgJson[STRING_CONSTANTS.DISPLAY]['delay'] > 0) {
+                var delay = targetingMsgJson[STRING_CONSTANTS.DISPLAY]['delay'];
+                targetingMsgJson[STRING_CONSTANTS.DISPLAY]['delay'] = 0;
                 setTimeout(wiz.tr, delay * 1000, msg);
                 return false;
             }
@@ -2570,6 +2027,8 @@ function __wizrocket() {
             newCampObj[today] = dailyObj;
             newCampObj[STRING_CONSTANTS.GLOBAL] = globalObj;
             wzrk_util.saveCampaignObject(newCampObj);
+
+
         };
 
         var getCookieParams = function () {
@@ -2579,66 +2038,47 @@ function __wizrocket() {
             if (scookieObj == null) {
                 scookieObj = wiz.getSessionCookieObject();
             }
-            return (
-                "&t=wc&d=" +
-                encodeURIComponent(
-                    LZS.compressToBase64(
-                        gcookie + "|" + scookieObj["p"] + "|" + scookieObj["s"]
-                    )
-                )
-            );
+            return '&t=wc&d=' + encodeURIComponent(LZS.compressToBase64(gcookie + '|' + scookieObj['p'] + '|' + scookieObj['s']));
         };
 
-        var setupClickEvent = function (
-            onClick,
-            targetingMsgJson,
-            contentDiv,
-            divId,
-            isLegacy
-        ) {
-            if (onClick != "" && typeof onClick != STRING_CONSTANTS.UNDEFINED) {
+        var setupClickEvent = function (onClick, targetingMsgJson, contentDiv, divId, isLegacy) {
+            if (onClick != '' && typeof onClick != STRING_CONSTANTS.UNDEFINED) {
                 var ctaElement;
                 if (isLegacy) {
                     ctaElement = contentDiv;
                 } else {
-                    var jsCTAElements = contentDiv.getElementsByClassName(
-                        "jsCT_CTA"
-                    );
-                    if (
-                        typeof jsCTAElements != STRING_CONSTANTS.UNDEFINED &&
-                        jsCTAElements.length == 1
-                    ) {
+                    var jsCTAElements = contentDiv.getElementsByClassName('jsCT_CTA');
+                    if (typeof jsCTAElements != STRING_CONSTANTS.UNDEFINED && jsCTAElements.length == 1) {
                         ctaElement = jsCTAElements[0];
                     }
                 }
-                var jsFunc = targetingMsgJson["display"]["jsFunc"];
-                var isPreview = targetingMsgJson["display"]["preview"];
+                var jsFunc = targetingMsgJson['display']['jsFunc'];
+                var isPreview = targetingMsgJson['display']['preview'];
                 if (typeof isPreview == STRING_CONSTANTS.UNDEFINED) {
                     onClick += getCookieParams();
                 }
 
                 if (typeof ctaElement != STRING_CONSTANTS.UNDEFINED) {
-                    ctaElement.onclick = function () {
-                        //invoke js function call
-                        if (typeof jsFunc != STRING_CONSTANTS.UNDEFINED) {
-                            //track notification clicked event
-                            if (
-                                typeof isPreview == STRING_CONSTANTS.UNDEFINED
-                            ) {
-                                wiz.fireRequest(onClick);
+                    ctaElement.onclick =
+                        function () {
+                            //invoke js function call
+                            if (typeof jsFunc != STRING_CONSTANTS.UNDEFINED) {
+                                //track notification clicked event
+                                if (typeof isPreview == STRING_CONSTANTS.UNDEFINED) {
+                                    wiz.fireRequest(onClick);
+                                }
+                                invokeExternalJs(jsFunc, targetingMsgJson);
+                                //close iframe. using -1 for no campaignId
+                                wiz.closeIframe('-1', divId);
+                                return;
                             }
-                            invokeExternalJs(jsFunc, targetingMsgJson);
-                            //close iframe. using -1 for no campaignId
-                            wiz.closeIframe("-1", divId);
-                            return;
+                            //pass on the gcookie|page|scookieId for capturing the click event
+                            if (targetingMsgJson['display']['window'] == '1') {
+                                window.open(onClick, '_blank');
+                            } else {
+                                window.location = onClick;
+                            }
                         }
-                        //pass on the gcookie|page|scookieId for capturing the click event
-                        if (targetingMsgJson["display"]["window"] == "1") {
-                            window.open(onClick, "_blank");
-                        } else {
-                            window.location = onClick;
-                        }
-                    };
                 }
             }
         };
@@ -2646,238 +2086,157 @@ function __wizrocket() {
         var invokeExternalJs = function (jsFunc, targetingMsgJson) {
             var func = window.parent[jsFunc];
             if (typeof func == "function") {
-                if (
-                    typeof targetingMsgJson["display"]["kv"] !==
-                    STRING_CONSTANTS.UNDEFINED
-                ) {
-                    func(targetingMsgJson["display"]["kv"]);
+                if (typeof targetingMsgJson['display']['kv'] !== STRING_CONSTANTS.UNDEFINED) {
+                    func(targetingMsgJson['display']['kv']);
                 } else {
                     func();
                 }
             }
         };
 
-        var setupClickUrl = function (
-            onClick,
-            targetingMsgJson,
-            contentDiv,
-            divId,
-            isLegacy
-        ) {
+        var setupClickUrl = function (onClick, targetingMsgJson, contentDiv, divId, isLegacy) {
             incrementImpression(targetingMsgJson);
-            setupClickEvent(
-                onClick,
-                targetingMsgJson,
-                contentDiv,
-                divId,
-                isLegacy
-            );
+            setupClickEvent(onClick, targetingMsgJson, contentDiv, divId, isLegacy);
         };
 
         var incrementImpression = function (targetingMsgJson) {
             var data = {};
-            data["type"] = "event";
-            data["evtName"] = "Notification Viewed";
-            data["evtData"] = {wzrk_id: targetingMsgJson["wzrk_id"]};
+            data['type'] = "event";
+            data['evtName'] = "Notification Viewed";
+            data['evtData'] = {"wzrk_id": targetingMsgJson['wzrk_id']};
             processEvent(data);
         };
 
         var renderFooterNotification = function (targetingMsgJson) {
-            var campaignId = targetingMsgJson["wzrk_id"].split("_")[0];
-            var displayObj = targetingMsgJson["display"];
+            var campaignId = targetingMsgJson['wzrk_id'].split('_')[0];
+            var displayObj = targetingMsgJson['display'];
 
-            if (displayObj["layout"] == 1) {
+            if (displayObj['layout'] == 1) {
                 return showExitIntent(undefined, targetingMsgJson);
             }
             if (doCampHouseKeeping(targetingMsgJson) == false) {
                 return;
             }
 
-            var divId = "wizParDiv" + displayObj["layout"];
+            var divId = 'wizParDiv' + displayObj['layout'];
 
             if (document.getElementById(divId) != null) {
                 return;
             }
             campaignDivMap[campaignId] = divId;
-            var isBanner = displayObj["layout"] == 2;
-            var msgDiv = document.createElement("div");
+            var isBanner = displayObj['layout'] == 2;
+            var msgDiv = document.createElement('div');
             msgDiv.id = divId;
             var viewHeight = window.innerHeight;
             var viewWidth = window.innerWidth;
             var legacy = false;
 
+
             if (!isBanner) {
-                var marginBottom = (viewHeight * 5) / 100;
+                var marginBottom = viewHeight * 5 / 100;
                 var contentHeight = 10;
-                var right = (viewWidth * 5) / 100;
+                var right = viewWidth * 5 / 100;
                 var bottomPosition = contentHeight + marginBottom;
-                var width = (viewWidth * 30) / 100 + 20;
-                var widthPerct = "width:30%;";
+                var width = viewWidth * 30 / 100 + 20;
+                var widthPerct = 'width:30%;';
                 //for small devices  - mobile phones
-                if (
-                    (/mobile/i.test(navigator.userAgent) ||
-                        /mini/i.test(navigator.userAgent)) &&
-                    /iPad/i.test(navigator.userAgent) == false
-                ) {
-                    width = (viewWidth * 85) / 100 + 20;
-                    right = (viewWidth * 5) / 100;
-                    bottomPosition = (viewHeight * 5) / 100;
-                    widthPerct = "width:80%;";
+                if ((/mobile/i.test(navigator.userAgent) || (/mini/i.test(navigator.userAgent)) ) && /iPad/i.test(navigator.userAgent) == false) {
+                    width = viewWidth * 85 / 100 + 20;
+                    right = viewWidth * 5 / 100;
+                    bottomPosition = viewHeight * 5 / 100;
+                    widthPerct = 'width:80%;';
                     //medium devices - tablets
-                } else if (
-                    "ontouchstart" in window ||
-                    /tablet/i.test(navigator.userAgent)
-                ) {
-                    width = (viewWidth * 50) / 100 + 20;
-                    right = (viewWidth * 5) / 100;
-                    bottomPosition = (viewHeight * 5) / 100;
-                    widthPerct = "width:50%;";
+                } else if ('ontouchstart' in window || (/tablet/i.test(navigator.userAgent))) {
+                    width = viewWidth * 50 / 100 + 20;
+                    right = viewWidth * 5 / 100;
+                    bottomPosition = viewHeight * 5 / 100;
+                    widthPerct = 'width:50%;';
                 }
 
                 //legacy footer notif
-                if (typeof displayObj["proto"] == STRING_CONSTANTS.UNDEFINED) {
+                if (typeof displayObj['proto'] == STRING_CONSTANTS.UNDEFINED) {
                     legacy = true;
-                    msgDiv.setAttribute(
-                        "style",
-                        "display:block;overflow:hidden; bottom:" +
-                        bottomPosition +
-                        "px !important;width:" +
-                        width +
-                        "px !important;right:" +
-                        right +
-                        "px !important;position:fixed;z-index:2147483647;"
-                    );
+                    msgDiv.setAttribute('style', 'display:block;overflow:hidden; bottom:' + bottomPosition + 'px !important;width:' + width + 'px !important;right:' + right + 'px !important;position:fixed;z-index:2147483647;');
                 } else {
-                    msgDiv.setAttribute(
-                        "style",
-                        widthPerct + displayObj["iFrameStyle"]
-                    );
+                    msgDiv.setAttribute('style', widthPerct + displayObj['iFrameStyle']);
                 }
             } else {
-                msgDiv.setAttribute("style", displayObj["iFrameStyle"]);
+                msgDiv.setAttribute('style', displayObj['iFrameStyle']);
             }
             document.body.appendChild(msgDiv);
-            var iframe = document.createElement("iframe");
+            var iframe = document.createElement('iframe');
 
-            var borderRadius = displayObj["br"] == false ? "0" : "8";
+            var borderRadius = displayObj['br'] == false ? "0" : "8";
 
-            iframe["frameborder"] = "0px";
-            iframe["marginheight"] = "0px";
-            iframe["marginwidth"] = "0px";
-            iframe["scrolling"] = "no";
-            iframe["id"] = "wiz-iframe";
-            var onClick = targetingMsgJson["display"]["onClick"];
-            var pointerCss = "";
-            if (onClick != "" && typeof onClick != STRING_CONSTANTS.UNDEFINED) {
-                pointerCss = "cursor:pointer;";
+            iframe['frameborder'] = '0px';
+            iframe['marginheight'] = '0px';
+            iframe['marginwidth'] = '0px';
+            iframe['scrolling'] = 'no';
+            iframe['id'] = 'wiz-iframe';
+            var onClick = targetingMsgJson['display']['onClick'];
+            var pointerCss = '';
+            if (onClick != '' && typeof onClick != STRING_CONSTANTS.UNDEFINED) {
+                pointerCss = 'cursor:pointer;';
             }
 
             var html;
             //direct html
-            if (targetingMsgJson["msgContent"]["type"] === 1) {
-                html = targetingMsgJson["msgContent"]["html"];
-                html = html.replace("##campaignId##", campaignId);
+            if (targetingMsgJson['msgContent']['type'] === 1) {
+                html = targetingMsgJson['msgContent']['html'];
+                html = html.replace('##campaignId##', campaignId);
             } else {
-                var css =
-                    "" +
+                var css = '' +
                     '<style type="text/css">' +
-                    "body{margin:0;padding:0;}" +
-                    "#contentDiv.wzrk{overflow:hidden;padding:0;text-align:center;" +
-                    pointerCss +
-                    "}" +
-                    "#contentDiv.wzrk td{padding:15px 10px;}" +
-                    ".wzrkPPtitle{font-weight: bold;font-size: 16px;font-family:arial;padding-bottom:10px;word-break: break-word;}" +
-                    ".wzrkPPdscr{font-size: 14px;font-family:arial;line-height:16px;word-break: break-word;display:inline-block;}" +
-                    ".PL15{padding-left:15px;}" +
-                    ".wzrkPPwarp{margin:20px 20px 0 5px;padding:0px;border-radius: " +
-                    borderRadius +
-                    "px;box-shadow: 1px 1px 5px #888888;}" +
-                    "a.wzrkClose{cursor:pointer;position: absolute;top: 11px;right: 11px;z-index: 2147483647;font-size:19px;font-family:arial;font-weight:bold;text-decoration: none;width: 25px;/*height: 25px;*/text-align: center; -webkit-appearance: none; line-height: 25px;" +
-                    "background: #353535;border: #fff 2px solid;border-radius: 100%;box-shadow: #777 2px 2px 2px;color:#fff;}" +
-                    "a:hover.wzrkClose{background-color:#d1914a !important;color:#fff !important; -webkit-appearance: none;}" +
-                    "td{vertical-align:top;}" +
-                    "td.imgTd{border-top-left-radius:8px;border-bottom-left-radius:8px;}" +
-                    "</style>";
+                    'body{margin:0;padding:0;}' +
+                    '#contentDiv.wzrk{overflow:hidden;padding:0;text-align:center;' + pointerCss + '}' +
+                    '#contentDiv.wzrk td{padding:15px 10px;}' +
+                    '.wzrkPPtitle{font-weight: bold;font-size: 16px;font-family:arial;padding-bottom:10px;word-break: break-word;}' +
+                    '.wzrkPPdscr{font-size: 14px;font-family:arial;line-height:16px;word-break: break-word;display:inline-block;}' +
+                    '.PL15{padding-left:15px;}' +
+                    '.wzrkPPwarp{margin:20px 20px 0 5px;padding:0px;border-radius: ' + borderRadius + 'px;box-shadow: 1px 1px 5px #888888;}' +
+                    'a.wzrkClose{cursor:pointer;position: absolute;top: 11px;right: 11px;z-index: 2147483647;font-size:19px;font-family:arial;font-weight:bold;text-decoration: none;width: 25px;/*height: 25px;*/text-align: center; -webkit-appearance: none; line-height: 25px;' +
+                    'background: #353535;border: #fff 2px solid;border-radius: 100%;box-shadow: #777 2px 2px 2px;color:#fff;}' +
+                    'a:hover.wzrkClose{background-color:#d1914a !important;color:#fff !important; -webkit-appearance: none;}' +
+                    'td{vertical-align:top;}' +
+                    'td.imgTd{border-top-left-radius:8px;border-bottom-left-radius:8px;}' +
+                    '</style>';
 
                 var bgColor, textColor, btnBg, leftTd, btColor;
-                if (targetingMsgJson["display"]["theme"] == "dark") {
+                if (targetingMsgJson['display']['theme'] == 'dark') {
                     bgColor = "#2d2d2e";
                     textColor = "#eaeaea";
-                    btnBg = "#353535";
-                    leftTd = "#353535";
-                    btColor = "#ffffff";
+                    btnBg = '#353535';
+                    leftTd = '#353535';
+                    btColor = '#ffffff';
                 } else {
                     bgColor = "#ffffff";
                     textColor = "#000000";
-                    leftTd = "#f4f4f4";
-                    btnBg = "#a5a6a6";
-                    btColor = "#ffffff";
+                    leftTd = '#f4f4f4';
+                    btnBg = '#a5a6a6';
+                    btColor = '#ffffff';
                 }
-                var titleText = targetingMsgJson["msgContent"]["title"];
-                var descriptionText =
-                    targetingMsgJson["msgContent"]["description"];
+                var titleText = targetingMsgJson['msgContent']['title'];
+                var descriptionText = targetingMsgJson['msgContent']['description'];
                 var imageTd = "";
-                if (
-                    typeof targetingMsgJson["msgContent"]["imageUrl"] !=
-                    STRING_CONSTANTS.UNDEFINED &&
-                    targetingMsgJson["msgContent"]["imageUrl"] != ""
-                ) {
-                    imageTd =
-                        "<td class='imgTd' style='background-color:" +
-                        leftTd +
-                        "'><img src='" +
-                        targetingMsgJson["msgContent"]["imageUrl"] +
-                        "' height='60' width='60'></td>";
+                if (typeof targetingMsgJson['msgContent']['imageUrl'] != STRING_CONSTANTS.UNDEFINED && targetingMsgJson['msgContent']['imageUrl'] != '') {
+                    imageTd = "<td class='imgTd' style='background-color:" + leftTd + "'><img src='" + targetingMsgJson['msgContent']['imageUrl'] + "' height='60' width='60'></td>";
                 }
-                var onClickStr =
-                    "parent.$WZRK_WR.closeIframe(" +
-                    campaignId +
-                    ",'" +
-                    divId +
-                    "');";
-                var title =
-                    "<div class='wzrkPPwarp' style='color:" +
-                    textColor +
-                    ";background-color:" +
-                    bgColor +
-                    ";'>" +
-                    "<a href='javascript:void(0);' onclick=" +
-                    onClickStr +
-                    " class='wzrkClose' style='background-color:" +
-                    btnBg +
-                    ";color:" +
-                    btColor +
-                    "'>&times;</a>" +
+                var onClickStr = "parent.$WZRK_WR.closeIframe(" + campaignId + ",'" + divId + "');";
+                var title = "<div class='wzrkPPwarp' style='color:" + textColor + ";background-color:" + bgColor + ";'>" +
+                    "<a href='javascript:void(0);' onclick=" + onClickStr + " class='wzrkClose' style='background-color:" + btnBg + ";color:" + btColor + "'>&times;</a>" +
                     "<div id='contentDiv' class='wzrk'>" +
                     "<table cellpadding='0' cellspacing='0' border='0'>" +
                     //"<tr><td colspan='2'></td></tr>"+
-                    "<tr>" +
-                    imageTd +
-                    "<td style='vertical-align:top;'>" +
-                    "<div class='wzrkPPtitle' style='color:" +
-                    textColor +
-                    "'>" +
-                    titleText +
-                    "</div>";
-                var body =
-                    "<div class='wzrkPPdscr' style='color:" +
-                    textColor +
-                    "'>" +
-                    descriptionText +
-                    "<div></td></tr></table></div>";
+                    "<tr>" + imageTd + "<td style='vertical-align:top;'>" +
+                    "<div class='wzrkPPtitle' style='color:" + textColor + "'>" + titleText + "</div>";
+                var body = "<div class='wzrkPPdscr' style='color:" + textColor + "'>" + descriptionText + "<div></td></tr></table></div>";
                 html = css + title + body;
             }
 
-            iframe.setAttribute(
-                "style",
-                "z-index: 2147483647; display:block; width: 100% !important; border:0px !important; border-color:none !important;"
-            );
+
+            iframe.setAttribute('style', 'z-index: 2147483647; display:block; width: 100% !important; border:0px !important; border-color:none !important;');
             msgDiv.appendChild(iframe);
-            var ifrm = iframe.contentWindow
-                ? iframe.contentWindow
-                : iframe.contentDocument.document
-                    ? iframe.contentDocument.document
-                    : iframe.contentDocument;
+            var ifrm = (iframe.contentWindow) ? iframe.contentWindow : (iframe.contentDocument.document) ? iframe.contentDocument.document : iframe.contentDocument;
             var doc = ifrm.document;
 
             doc.open();
@@ -2886,72 +2245,43 @@ function __wizrocket() {
 
             function adjustIFrameHeight() {
                 //adjust iframe and body height of html inside correctly
-                contentHeight = document
-                    .getElementById("wiz-iframe")
-                    .contentDocument.getElementById("contentDiv").scrollHeight;
-                if (displayObj["custom-editor"] !== true && !isBanner) {
+                contentHeight = document.getElementById("wiz-iframe").contentDocument.getElementById('contentDiv').scrollHeight;
+                if (displayObj['custom-editor'] !== true && !isBanner) {
                     contentHeight += 25;
                 }
-                document.getElementById(
-                    "wiz-iframe"
-                ).contentDocument.body.style.margin = "0px";
-                document.getElementById("wiz-iframe").style.height =
-                    contentHeight + "px";
+                document.getElementById("wiz-iframe").contentDocument.body.style.margin = "0px";
+                document.getElementById("wiz-iframe").style.height = contentHeight + "px";
             }
 
             var ua = navigator.userAgent.toLowerCase();
-            if (ua.indexOf("safari") !== -1) {
-                if (ua.indexOf("chrome") > -1) {
-                    iframe.onload = function () {
+            if (ua.indexOf('safari') !== -1) {
+                if (ua.indexOf('chrome') > -1) {
+                    iframe.onload = function(){
                         adjustIFrameHeight();
-                        var contentDiv = document
-                            .getElementById("wiz-iframe")
-                            .contentDocument.getElementById("contentDiv");
-                        setupClickUrl(
-                            onClick,
-                            targetingMsgJson,
-                            contentDiv,
-                            divId,
-                            legacy
-                        );
+                        var contentDiv = document.getElementById("wiz-iframe").contentDocument.getElementById('contentDiv');
+                        setupClickUrl(onClick, targetingMsgJson, contentDiv, divId, legacy);
                     };
                 } else {
                     var inDoc = iframe.contentDocument || iframe.contentWindow;
                     if (inDoc.document) inDoc = inDoc.document;
                     // safari iphone 7+ needs this.
                     adjustIFrameHeight();
-                    var _timer = setInterval(function () {
-                        if (inDoc.readyState === "complete") {
+                    var _timer = setInterval(function() {
+                        if (inDoc.readyState === 'complete') {
                             clearInterval(_timer);
                             //adjust iframe and body height of html inside correctly
                             adjustIFrameHeight();
-                            var contentDiv = document
-                                .getElementById("wiz-iframe")
-                                .contentDocument.getElementById("contentDiv");
-                            setupClickUrl(
-                                onClick,
-                                targetingMsgJson,
-                                contentDiv,
-                                divId,
-                                legacy
-                            );
+                            var contentDiv = document.getElementById("wiz-iframe").contentDocument.getElementById('contentDiv');
+                            setupClickUrl(onClick, targetingMsgJson, contentDiv, divId, legacy);
                         }
                     }, 10);
                 }
             } else {
-                iframe.onload = function () {
+                iframe.onload = function(){
                     //adjust iframe and body height of html inside correctly
                     adjustIFrameHeight();
-                    var contentDiv = document
-                        .getElementById("wiz-iframe")
-                        .contentDocument.getElementById("contentDiv");
-                    setupClickUrl(
-                        onClick,
-                        targetingMsgJson,
-                        contentDiv,
-                        divId,
-                        legacy
-                    );
+                    var contentDiv = document.getElementById("wiz-iframe").contentDocument.getElementById('contentDiv');
+                    setupClickUrl(onClick, targetingMsgJson, contentDiv, divId, legacy);
                 };
             }
         };
@@ -2959,29 +2289,23 @@ function __wizrocket() {
         var _callBackCalled = false;
 
         var showFooterNotification = function (targetingMsgJson) {
-            var onClick = targetingMsgJson["display"]["onClick"];
-            if (
-                wizrocket.hasOwnProperty("notificationCallback") &&
+
+
+            var onClick = targetingMsgJson['display']['onClick'];
+            if (wizrocket.hasOwnProperty("notificationCallback") &&
                 typeof wizrocket["notificationCallback"] !== "undefined" &&
-                typeof wizrocket["notificationCallback"] === "function"
-            ) {
+                typeof wizrocket["notificationCallback"] === "function") {
                 var notificationCallback = wizrocket["notificationCallback"];
                 if (!_callBackCalled) {
                     var inaObj = {};
                     inaObj["msgContent"] = targetingMsgJson["msgContent"];
                     inaObj["msgId"] = targetingMsgJson["wzrk_id"];
-                    if (
-                        typeof targetingMsgJson["display"]["kv"] !==
-                        STRING_CONSTANTS.UNDEFINED
-                    ) {
-                        inaObj["kv"] = targetingMsgJson["display"]["kv"];
+                    if (typeof targetingMsgJson['display']['kv'] !== STRING_CONSTANTS.UNDEFINED) {
+                        inaObj["kv"] = targetingMsgJson['display']['kv'];
                     }
                     wizrocket["raiseNotificationClicked"] = function () {
-                        if (
-                            onClick != "" &&
-                            typeof onClick != STRING_CONSTANTS.UNDEFINED
-                        ) {
-                            var jsFunc = targetingMsgJson["display"]["jsFunc"];
+                        if (onClick != '' && typeof onClick != STRING_CONSTANTS.UNDEFINED) {
+                            var jsFunc = targetingMsgJson['display']['jsFunc'];
                             onClick += getCookieParams();
 
                             //invoke js function call
@@ -2992,8 +2316,8 @@ function __wizrocket() {
                                 return;
                             }
                             //pass on the gcookie|page|scookieId for capturing the click event
-                            if (targetingMsgJson["display"]["window"] == "1") {
-                                window.open(onClick, "_blank");
+                            if (targetingMsgJson['display']['window'] == '1') {
+                                window.open(onClick, '_blank');
                             } else {
                                 window.location = onClick;
                             }
@@ -3007,15 +2331,13 @@ function __wizrocket() {
                 }
             } else {
                 renderFooterNotification(targetingMsgJson);
+
             }
         };
         var exitintentObj;
         var showExitIntent = function (event, targetObj) {
             var targetingMsgJson;
-            if (
-                typeof event != STRING_CONSTANTS.UNDEFINED &&
-                event["clientY"] > 0
-            ) {
+            if (typeof event != STRING_CONSTANTS.UNDEFINED && event['clientY'] > 0) {
                 return;
             }
             if (typeof targetObj == STRING_CONSTANTS.UNDEFINED) {
@@ -3028,193 +2350,115 @@ function __wizrocket() {
                 return;
             }
             //dont show exit intent on tablet/mobile - only on desktop
-            if (
-                typeof targetingMsgJson["display"]["layout"] ==
-                STRING_CONSTANTS.UNDEFINED &&
-                (/mobile/i.test(navigator.userAgent) ||
-                    /mini/i.test(navigator.userAgent) ||
-                    /iPad/i.test(navigator.userAgent) ||
-                    "ontouchstart" in window ||
-                    /tablet/i.test(navigator.userAgent))
-            ) {
+            if (typeof targetingMsgJson['display']['layout'] == STRING_CONSTANTS.UNDEFINED &&
+                ((/mobile/i.test(navigator.userAgent)) || (/mini/i.test(navigator.userAgent)) || (/iPad/i.test(navigator.userAgent)) ||
+                    ('ontouchstart' in window) || (/tablet/i.test(navigator.userAgent)))) {
                 return;
             }
 
-            var campaignId = targetingMsgJson["wzrk_id"].split("_")[0];
+            var campaignId = targetingMsgJson['wzrk_id'].split('_')[0];
             if (doCampHouseKeeping(targetingMsgJson) == false) {
                 return;
             }
 
-            campaignDivMap[campaignId] = "intentPreview";
+            campaignDivMap[campaignId] = 'intentPreview';
             var legacy = false;
-            var opacityDiv = document.createElement("div");
-            opacityDiv.id = "intentOpacityDiv";
-            opacityDiv.setAttribute(
-                "style",
-                "position: fixed;top: 0;bottom: 0;left: 0;width: 100%;height: 100%;z-index: 2147483646;background: rgba(0,0,0,0.7);"
-            );
+            var opacityDiv = document.createElement('div');
+            opacityDiv.id = 'intentOpacityDiv';
+            opacityDiv.setAttribute('style', 'position: fixed;top: 0;bottom: 0;left: 0;width: 100%;height: 100%;z-index: 2147483646;background: rgba(0,0,0,0.7);');
             document.body.appendChild(opacityDiv);
 
-            var msgDiv = document.createElement("div");
-            msgDiv.id = "intentPreview";
+            var msgDiv = document.createElement('div');
+            msgDiv.id = 'intentPreview';
 
-            if (
-                typeof targetingMsgJson["display"]["proto"] ==
-                STRING_CONSTANTS.UNDEFINED
-            ) {
+            if (typeof targetingMsgJson['display']['proto'] == STRING_CONSTANTS.UNDEFINED) {
                 legacy = true;
-                msgDiv.setAttribute(
-                    "style",
-                    "display:block;overflow:hidden;top:55% !important;left:50% !important;position:fixed;z-index:2147483647;width:600px !important;height:600px !important;margin:-300px 0 0 -300px !important;"
-                );
+                msgDiv.setAttribute('style', 'display:block;overflow:hidden;top:55% !important;left:50% !important;position:fixed;z-index:2147483647;width:600px !important;height:600px !important;margin:-300px 0 0 -300px !important;');
             } else {
-                msgDiv.setAttribute(
-                    "style",
-                    targetingMsgJson["display"]["iFrameStyle"]
-                );
+                msgDiv.setAttribute('style', targetingMsgJson['display']['iFrameStyle']);
             }
             document.body.appendChild(msgDiv);
-            var iframe = document.createElement("iframe");
-            var borderRadius =
-                targetingMsgJson["display"]["br"] == false ? "0" : "8";
-            iframe.frameborder = "0px";
-            iframe.marginheight = "0px";
-            iframe.marginwidth = "0px";
-            iframe.scrolling = "no";
-            iframe.id = "wiz-iframe-intent";
-            var onClick = targetingMsgJson["display"]["onClick"];
-            var pointerCss = "";
-            if (onClick != "" && typeof onClick != STRING_CONSTANTS.UNDEFINED) {
-                pointerCss = "cursor:pointer;";
+            var iframe = document.createElement('iframe');
+            var borderRadius = targetingMsgJson['display']['br'] == false ? "0" : "8";
+            iframe.frameborder = '0px';
+            iframe.marginheight = '0px';
+            iframe.marginwidth = '0px';
+            iframe.scrolling = 'no';
+            iframe.id = 'wiz-iframe-intent';
+            var onClick = targetingMsgJson['display']['onClick'];
+            var pointerCss = '';
+            if (onClick != '' && typeof onClick != STRING_CONSTANTS.UNDEFINED) {
+                pointerCss = 'cursor:pointer;';
             }
             var html;
             //direct html
-            if (targetingMsgJson["msgContent"]["type"] == 1) {
-                html = targetingMsgJson["msgContent"]["html"];
-                html = html.replace("##campaignId##", campaignId);
+            if (targetingMsgJson['msgContent']['type'] == 1) {
+                html = targetingMsgJson['msgContent']['html'];
+                html = html.replace('##campaignId##', campaignId);
             } else {
-                var css =
-                    "" +
+                var css = '' +
                     '<style type="text/css">' +
-                    "body{margin:0;padding:0;}" +
-                    "#contentDiv.wzrk{overflow:hidden;padding:0 0 20px 0;text-align:center;" +
-                    pointerCss +
-                    "}" +
-                    "#contentDiv.wzrk td{padding:15px 10px;}" +
-                    ".wzrkPPtitle{font-weight: bold;font-size: 24px;font-family:arial;word-break: break-word;padding-top:20px;}" +
-                    ".wzrkPPdscr{font-size: 14px;font-family:arial;line-height:16px;word-break: break-word;display:inline-block;padding:20px 20px 0 20px;line-height:20px;}" +
-                    ".PL15{padding-left:15px;}" +
-                    ".wzrkPPwarp{margin:20px 20px 0 5px;padding:0px;border-radius: " +
-                    borderRadius +
-                    "px;box-shadow: 1px 1px 5px #888888;}" +
-                    "a.wzrkClose{cursor:pointer;position: absolute;top: 11px;right: 11px;z-index: 2147483647;font-size:19px;font-family:arial;font-weight:bold;text-decoration: none;width: 25px;/*height: 25px;*/text-align: center; -webkit-appearance: none; line-height: 25px;" +
-                    "background: #353535;border: #fff 2px solid;border-radius: 100%;box-shadow: #777 2px 2px 2px;color:#fff;}" +
-                    "a:hover.wzrkClose{background-color:#d1914a !important;color:#fff !important; -webkit-appearance: none;}" +
-                    "#contentDiv .button{padding-top:20px;}" +
-                    "#contentDiv .button a{font-size: 14px;font-weight:bold;font-family:arial;text-align:center;display:inline-block;text-decoration:none;padding:0 30px;height:40px;line-height:40px;background:#ea693b;color:#fff;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;}" +
-                    "</style>";
+                    'body{margin:0;padding:0;}' +
+                    '#contentDiv.wzrk{overflow:hidden;padding:0 0 20px 0;text-align:center;' + pointerCss + '}' +
+                    '#contentDiv.wzrk td{padding:15px 10px;}' +
+                    '.wzrkPPtitle{font-weight: bold;font-size: 24px;font-family:arial;word-break: break-word;padding-top:20px;}' +
+                    '.wzrkPPdscr{font-size: 14px;font-family:arial;line-height:16px;word-break: break-word;display:inline-block;padding:20px 20px 0 20px;line-height:20px;}' +
+                    '.PL15{padding-left:15px;}' +
+                    '.wzrkPPwarp{margin:20px 20px 0 5px;padding:0px;border-radius: ' + borderRadius + 'px;box-shadow: 1px 1px 5px #888888;}' +
+                    'a.wzrkClose{cursor:pointer;position: absolute;top: 11px;right: 11px;z-index: 2147483647;font-size:19px;font-family:arial;font-weight:bold;text-decoration: none;width: 25px;/*height: 25px;*/text-align: center; -webkit-appearance: none; line-height: 25px;' +
+                    'background: #353535;border: #fff 2px solid;border-radius: 100%;box-shadow: #777 2px 2px 2px;color:#fff;}' +
+                    'a:hover.wzrkClose{background-color:#d1914a !important;color:#fff !important; -webkit-appearance: none;}' +
+                    '#contentDiv .button{padding-top:20px;}' +
+                    '#contentDiv .button a{font-size: 14px;font-weight:bold;font-family:arial;text-align:center;display:inline-block;text-decoration:none;padding:0 30px;height:40px;line-height:40px;background:#ea693b;color:#fff;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;}' +
+                    '</style>';
 
                 var bgColor, textColor, btnBg, btColor;
-                if (targetingMsgJson["display"]["theme"] == "dark") {
+                if (targetingMsgJson['display']['theme'] == 'dark') {
                     bgColor = "#2d2d2e";
                     textColor = "#eaeaea";
-                    btnBg = "#353535";
-                    btColor = "#ffffff";
+                    btnBg = '#353535';
+                    btColor = '#ffffff';
                 } else {
                     bgColor = "#ffffff";
                     textColor = "#000000";
-                    btnBg = "#a5a6a6";
-                    btColor = "#ffffff";
+                    btnBg = '#a5a6a6';
+                    btColor = '#ffffff';
                 }
-                var titleText = targetingMsgJson["msgContent"]["title"];
-                var descriptionText =
-                    targetingMsgJson["msgContent"]["description"];
+                var titleText = targetingMsgJson['msgContent']['title'];
+                var descriptionText = targetingMsgJson['msgContent']['description'];
                 var ctaText = "";
-                if (
-                    typeof targetingMsgJson["msgContent"]["ctaText"] !=
-                    STRING_CONSTANTS.UNDEFINED &&
-                    targetingMsgJson["msgContent"]["ctaText"] != ""
-                ) {
-                    ctaText =
-                        "<div class='button'><a href='#'>" +
-                        targetingMsgJson["msgContent"]["ctaText"] +
-                        "</a></div>";
+                if (typeof targetingMsgJson['msgContent']['ctaText'] != STRING_CONSTANTS.UNDEFINED && targetingMsgJson['msgContent']['ctaText'] != '') {
+                    ctaText = "<div class='button'><a href='#'>" + targetingMsgJson['msgContent']['ctaText'] + "</a></div>";
                 }
 
                 var imageTd = "";
-                if (
-                    typeof targetingMsgJson["msgContent"]["imageUrl"] !=
-                    STRING_CONSTANTS.UNDEFINED &&
-                    targetingMsgJson["msgContent"]["imageUrl"] != ""
-                ) {
-                    imageTd =
-                        "<div style='padding-top:20px;'><img src='" +
-                        targetingMsgJson["msgContent"]["imageUrl"] +
-                        "' width='500' alt=" +
-                        titleText +
-                        " /></div>";
+                if (typeof targetingMsgJson['msgContent']['imageUrl'] != STRING_CONSTANTS.UNDEFINED && targetingMsgJson['msgContent']['imageUrl'] != '') {
+                    imageTd = "<div style='padding-top:20px;'><img src='" + targetingMsgJson['msgContent']['imageUrl'] + "' width='500' alt=" + titleText + " /></div>";
                 }
-                var onClickStr =
-                    "parent.$WZRK_WR.closeIframe(" +
-                    campaignId +
-                    ",'intentPreview');";
-                var title =
-                    "<div class='wzrkPPwarp' style='color:" +
-                    textColor +
-                    ";background-color:" +
-                    bgColor +
-                    ";'>" +
-                    "<a href='javascript:void(0);' onclick=" +
-                    onClickStr +
-                    " class='wzrkClose' style='background-color:" +
-                    btnBg +
-                    ";color:" +
-                    btColor +
-                    "'>&times;</a>" +
+                var onClickStr = "parent.$WZRK_WR.closeIframe(" + campaignId + ",'intentPreview');";
+                var title = "<div class='wzrkPPwarp' style='color:" + textColor + ";background-color:" + bgColor + ";'>" +
+                    "<a href='javascript:void(0);' onclick=" + onClickStr + " class='wzrkClose' style='background-color:" + btnBg + ";color:" + btColor + "'>&times;</a>" +
                     "<div id='contentDiv' class='wzrk'>" +
-                    "<div class='wzrkPPtitle' style='color:" +
-                    textColor +
-                    "'>" +
-                    titleText +
-                    "</div>";
-                var body =
-                    "<div class='wzrkPPdscr' style='color:" +
-                    textColor +
-                    "'>" +
-                    descriptionText +
-                    "</div>" +
-                    imageTd +
-                    ctaText +
+                    "<div class='wzrkPPtitle' style='color:" + textColor + "'>" + titleText + "</div>";
+                var body = "<div class='wzrkPPdscr' style='color:" + textColor + "'>" + descriptionText + "</div>" + imageTd + ctaText +
                     "</div></div>";
                 html = css + title + body;
             }
-            iframe.setAttribute(
-                "style",
-                "z-index: 2147483647; display:block; height: 100% !important; width: 100% !important;min-height:80px !important;border:0px !important; border-color:none !important;"
-            );
+            iframe.setAttribute('style', 'z-index: 2147483647; display:block; height: 100% !important; width: 100% !important;min-height:80px !important;border:0px !important; border-color:none !important;');
             msgDiv.appendChild(iframe);
-            var ifrm = iframe.contentWindow
-                ? iframe.contentWindow
-                : iframe.contentDocument.document
-                    ? iframe.contentDocument.document
-                    : iframe.contentDocument;
+            var ifrm = (iframe.contentWindow) ? iframe.contentWindow : (iframe.contentDocument.document) ? iframe.contentDocument.document : iframe.contentDocument;
             var doc = ifrm.document;
 
             doc.open();
             doc.write(html);
             doc.close();
 
-            var contentDiv = document
-                .getElementById("wiz-iframe-intent")
-                .contentDocument.getElementById("contentDiv");
-            setupClickUrl(
-                onClick,
-                targetingMsgJson,
-                contentDiv,
-                "intentPreview",
-                legacy
-            );
+            var contentDiv = document.getElementById("wiz-iframe-intent").contentDocument.getElementById('contentDiv');
+            setupClickUrl(onClick, targetingMsgJson, contentDiv, 'intentPreview', legacy);
+
+
         };
+
 
         if (!document.body) {
             if (wiz_counter < 6) {
@@ -3223,28 +2467,22 @@ function __wizrocket() {
             }
             return;
         }
-        if (typeof msg["inapp_notifs"] != STRING_CONSTANTS.UNDEFINED) {
-            for (var index = 0; index < msg["inapp_notifs"].length; index++) {
-                var target_notif = msg["inapp_notifs"][index];
-                if (
-                    typeof target_notif["display"]["wtarget_type"] ==
-                    STRING_CONSTANTS.UNDEFINED ||
-                    target_notif["display"]["wtarget_type"] == 0
-                ) {
+        if (typeof msg['inapp_notifs'] != STRING_CONSTANTS.UNDEFINED) {
+            for (var index = 0; index < msg['inapp_notifs'].length; index++) {
+                var target_notif = msg['inapp_notifs'][index];
+                if (typeof target_notif['display']['wtarget_type'] == STRING_CONSTANTS.UNDEFINED || target_notif['display']['wtarget_type'] == 0) {
                     showFooterNotification(target_notif);
-                } else if (target_notif["display"]["wtarget_type"] == 1) {
-                    // if display['wtarget_type']==1 then exit intent
+                } else if (target_notif['display']['wtarget_type'] == 1) { 	// if display['wtarget_type']==1 then exit intent
                     exitintentObj = target_notif;
                     window.document.body.onmouseleave = showExitIntent;
                 }
+
             }
         }
 
         var mergeEventMap = function (newEvtMap) {
             if (typeof globalEventsMap == STRING_CONSTANTS.UNDEFINED) {
-                globalEventsMap = wiz.readFromLSorCookie(
-                    STRING_CONSTANTS.EV_COOKIE
-                );
+                globalEventsMap = wiz.readFromLSorCookie(STRING_CONSTANTS.EV_COOKIE);
                 if (typeof globalEventsMap == STRING_CONSTANTS.UNDEFINED) {
                     globalEventsMap = newEvtMap;
                     return;
@@ -3254,14 +2492,8 @@ function __wizrocket() {
                 if (newEvtMap.hasOwnProperty(key)) {
                     var oldEvtObj = globalEventsMap[key];
                     var newEvtObj = newEvtMap[key];
-                    if (
-                        typeof globalEventsMap[key] !=
-                        STRING_CONSTANTS.UNDEFINED
-                    ) {
-                        if (
-                            typeof newEvtObj[0] != STRING_CONSTANTS.UNDEFINED &&
-                            newEvtObj[0] > oldEvtObj[0]
-                        ) {
+                    if (typeof globalEventsMap[key] != STRING_CONSTANTS.UNDEFINED) {
+                        if (typeof newEvtObj[0] != STRING_CONSTANTS.UNDEFINED && newEvtObj[0] > oldEvtObj[0]) {
                             globalEventsMap[key] = newEvtObj;
                         }
                     } else {
@@ -3271,40 +2503,39 @@ function __wizrocket() {
             }
         };
 
+
         if (wzrk_util.isLocalStorageSupported()) {
             try {
-                if (typeof msg["evpr"] != STRING_CONSTANTS.UNDEFINED) {
-                    var eventsMap = msg["evpr"]["events"];
-                    var profileMap = msg["evpr"]["profile"];
-                    var syncExpiry = msg["evpr"]["expires_in"];
+                if (typeof msg['evpr'] != STRING_CONSTANTS.UNDEFINED) {
+                    var eventsMap = msg['evpr']['events'];
+                    var profileMap = msg['evpr']['profile'];
+                    var syncExpiry = msg['evpr']['expires_in'];
                     var now = wzrk_util.getNow();
-                    wiz.setMetaProp("lsTime", now);
-                    wiz.setMetaProp("exTs", syncExpiry);
+                    wiz.setMetaProp('lsTime', now);
+                    wiz.setMetaProp('exTs', syncExpiry);
                     mergeEventMap(eventsMap);
-                    wiz.saveToLSorCookie(
-                        STRING_CONSTANTS.EV_COOKIE,
-                        globalEventsMap
-                    );
+                    wiz.saveToLSorCookie(STRING_CONSTANTS.EV_COOKIE, globalEventsMap);
                     if (typeof globalProfileMap == STRING_CONSTANTS.UNDEFINED) {
                         wiz.addToLocalProfileMap(profileMap, true);
                     } else {
                         wiz.addToLocalProfileMap(profileMap, false);
                     }
                 }
-                if (typeof msg["arp"] != STRING_CONSTANTS.UNDEFINED) {
-                    wiz.arp(msg["arp"]);
+                if (typeof msg['arp'] != STRING_CONSTANTS.UNDEFINED) {
+                    wiz.arp(msg['arp']);
                 }
-                if (typeof msg["inapp_stale"] != STRING_CONSTANTS.UNDEFINED) {
+                if (typeof msg['inapp_stale'] != STRING_CONSTANTS.UNDEFINED) {
                     var campObj = wzrk_util.getCampaignObject();
-                    var globalObj = campObj["global"];
+                    var globalObj = campObj['global'];
                     if (typeof globalObj != STRING_CONSTANTS.UNDEFINED) {
-                        for (var idx in msg["inapp_stale"]) {
-                            if (msg["inapp_stale"].hasOwnProperty(idx)) {
-                                delete globalObj[msg["inapp_stale"][idx]];
+                        for (var idx in msg['inapp_stale']) {
+                            if (msg['inapp_stale'].hasOwnProperty(idx)) {
+                                delete globalObj[msg['inapp_stale'][idx]];
                             }
                         }
                     }
                     wzrk_util.saveCampaignObject(campObj);
+
                 }
             } catch (e) {
                 wc.e("Unable to persist evrp/arp: " + e);
@@ -3314,162 +2545,128 @@ function __wizrocket() {
 
     //link - actual link, type could be - "ctr" or "view"
     wiz.getWrappedLink = function (link, targetId, type) {
+
         var data = {};
-        data["sendTo"] = link;
-        data["targetId"] = targetId;
-        data["epoch"] = wzrk_util.getNow();
+        data['sendTo'] = link;
+        data['targetId'] = targetId;
+        data['epoch'] = wzrk_util.getNow();
 
         if (type != null) {
-            data["type"] = type;
+            data['type'] = type;
         } else {
-            data["type"] = "view";
+            data['type'] = 'view';
         }
 
         data = wiz.addSystemDataToObject(data, undefined);
-        return wiz.addToURL(
-            recorderURL,
-            "d",
-            wiz.compressData(JSON.stringify(data))
-        );
+        return wiz.addToURL(recorderURL, "d", wiz.compressData(JSON.stringify(data)));
+
     };
+
 
     wiz.getMessageTemplate = function () {
         var body = "";
         body = body + '<div class="notice-message">';
         body = body + '  <a href="[RECORDER_HREF]" class="box">';
-        body =
-            body +
-            '    <div class="avatar"><span class="fa [ICON] fa-4x fa-fw"></span></div>';
+        body = body + '    <div class="avatar"><span class="fa [ICON] fa-4x fa-fw"></span></div>';
         body = body + '    <div class="info">';
         body = body + '      <div class="title">[TITLE]</div>';
         body = body + '      <div class="clearfix"></div>';
         body = body + '      <div class="text">[TEXT]</div>';
-        body = body + "    </div>";
+        body = body + '    </div>';
         body = body + '    <div class="clearfix"></div>';
-        body = body + "  </a>";
-        body = body + "</div>";
+        body = body + '  </a>';
+        body = body + '</div>';
         body = body + '<div class="clearfix"></div>';
         return body;
     };
 
     wiz.getMessageHeadTemplate = function () {
-        var head = "<head>";
+        var head = '<head>';
         head = head + '<base target="_parent" />';
-        head =
-            head +
-            '<link rel="stylesheet" href="http://static.clevertap.com/fa/font-awesome.css">';
-        head =
-            head +
-            '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
-        head = head + "<style>";
-        head = head + "[STYLE]";
-        head = head + "</style>";
+        head = head + '<link rel="stylesheet" href="http://static.clevertap.com/fa/font-awesome.css">';
+        head = head + '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+        head = head + '<style>';
+        head = head + '[STYLE]';
+        head = head + '</style>';
         head = head + "</head>";
         return head;
+
     };
+
 
     wiz.isChargedEventStructureValid = function (chargedObj) {
         if (wzrk_util.isObject(chargedObj)) {
             for (var key in chargedObj) {
                 if (chargedObj.hasOwnProperty(key)) {
+
+
                     if (key == "Items") {
                         if (!wzrk_util.isArray(chargedObj[key])) {
                             return false;
                         }
 
                         if (chargedObj[key].length > 16) {
-                            wiz.reportError(
-                                522,
-                                "Charged Items exceed 16 limit. Actual count: " +
-                                chargedObj[key].length +
-                                ". Additional items will be dropped."
-                            );
+                            wiz.reportError(522, "Charged Items exceed 16 limit. Actual count: " + chargedObj[key].length + ". Additional items will be dropped.");
                         }
 
                         for (var itemKey in chargedObj[key]) {
-                            if (chargedObj[key].hasOwnProperty(itemKey)) {
-                                // since default array implementation could be overridden - e.g. Teabox site
-                                if (
-                                    !wzrk_util.isObject(
-                                        chargedObj[key][itemKey]
-                                    ) ||
-                                    !wiz.isEventStructureFlat(
-                                        chargedObj[key][itemKey]
-                                    )
-                                ) {
+                            if (chargedObj[key].hasOwnProperty(itemKey)) {    // since default array implementation could be overridden - e.g. Teabox site
+                                if (!wzrk_util.isObject(chargedObj[key][itemKey]) || !wiz.isEventStructureFlat(chargedObj[key][itemKey])) {
                                     return false;
                                 }
                             }
                         }
-                    } else {
-                        //Items
-                        if (
-                            wzrk_util.isObject(chargedObj[key]) ||
-                            wzrk_util.isArray(chargedObj[key])
-                        ) {
+                    } else { //Items
+                        if (wzrk_util.isObject(chargedObj[key]) || wzrk_util.isArray(chargedObj[key])) {
                             return false;
                         } else if (wzrk_util.isDateObject(chargedObj[key])) {
-                            chargedObj[key] = wzrk_util.convertToWZRKDate(
-                                chargedObj[key]
-                            );
+                            chargedObj[key] = wzrk_util.convertToWZRKDate(chargedObj[key]);
                         }
+
                     } // if key == Items
                 }
             } //for..
             //save charged Id
-            if (
-                wzrk_util.isString(chargedObj[STRING_CONSTANTS.CHARGED_ID]) ||
-                wzrk_util.isNumber(chargedObj[STRING_CONSTANTS.CHARGED_ID])
-            ) {
+            if (wzrk_util.isString(chargedObj[STRING_CONSTANTS.CHARGED_ID]) || wzrk_util.isNumber(chargedObj[STRING_CONSTANTS.CHARGED_ID])) {
                 //casting chargeedId to string
                 var chargedId = chargedObj[STRING_CONSTANTS.CHARGED_ID] + "";
                 if (typeof globalChargedId == STRING_CONSTANTS.UNDEFINED) {
-                    globalChargedId = wiz.readFromLSorCookie(
-                        STRING_CONSTANTS.CHARGEDID_COOKIE_NAME
-                    );
+                    globalChargedId = wiz.readFromLSorCookie(STRING_CONSTANTS.CHARGEDID_COOKIE_NAME);
                 }
-                if (
-                    typeof globalChargedId != STRING_CONSTANTS.UNDEFINED &&
-                    globalChargedId.trim() === chargedId.trim()
-                ) {
+                if (typeof globalChargedId != STRING_CONSTANTS.UNDEFINED && globalChargedId.trim() === chargedId.trim()) {
                     //drop event- duplicate charged id
                     wc.e("Duplicate Charged Id - Dropped" + chargedObj);
                     return false;
                 }
                 globalChargedId = chargedId;
-                wiz.saveToLSorCookie(
-                    STRING_CONSTANTS.CHARGEDID_COOKIE_NAME,
-                    chargedId
-                );
+                wiz.saveToLSorCookie(STRING_CONSTANTS.CHARGEDID_COOKIE_NAME, chargedId);
             }
             return true;
         } // if object (chargedObject)
         return false;
     };
 
+
     //events can't have any nested structure or arrays
     wiz.isEventStructureFlat = function (eventObj) {
         if (wzrk_util.isObject(eventObj)) {
             for (var key in eventObj) {
                 if (eventObj.hasOwnProperty(key)) {
-                    if (
-                        wzrk_util.isObject(eventObj[key]) ||
-                        wzrk_util.isArray(eventObj[key])
-                    ) {
+                    if (wzrk_util.isObject(eventObj[key]) || wzrk_util.isArray(eventObj[key])) {
                         return false;
                     } else if (wzrk_util.isDateObject(eventObj[key])) {
-                        eventObj[key] = wzrk_util.convertToWZRKDate(
-                            eventObj[key]
-                        );
+                        eventObj[key] = wzrk_util.convertToWZRKDate(eventObj[key]);
                     }
                 }
             }
             return true;
         }
         return false;
+
     };
 
     wiz.isProfileValid = function (profileObj) {
+
         if (wzrk_util.isObject(profileObj)) {
             for (var profileKey in profileObj) {
                 if (profileObj.hasOwnProperty(profileKey)) {
@@ -3480,105 +2677,71 @@ function __wizrocket() {
                         delete profileObj[profileKey];
                         continue;
                     }
-                    if (
-                        profileKey == "Gender" &&
-                        !profileVal.match(/^M$|^F$/)
-                    ) {
+                    if (profileKey == 'Gender' && !profileVal.match(/^M$|^F$/)) {
                         valid = false;
-                        wc.e(wzrk_msg["gender-error"]);
+                        wc.e(wzrk_msg['gender-error']);
                     }
 
-                    if (
-                        profileKey == "Employed" &&
-                        !profileVal.match(/^Y$|^N$/)
-                    ) {
+                    if (profileKey == 'Employed' && !profileVal.match(/^Y$|^N$/)) {
                         valid = false;
-                        wc.e(wzrk_msg["employed-error"]);
+                        wc.e(wzrk_msg['employed-error']);
                     }
 
-                    if (
-                        profileKey == "Married" &&
-                        !profileVal.match(/^Y$|^N$/)
-                    ) {
+                    if (profileKey == 'Married' && !profileVal.match(/^Y$|^N$/)) {
                         valid = false;
-                        wc.e(wzrk_msg["married-error"]);
+                        wc.e(wzrk_msg['married-error']);
                     }
 
-                    if (
-                        profileKey == "Education" &&
-                        !profileVal.match(/^School$|^College$|^Graduate$/)
-                    ) {
+                    if (profileKey == 'Education' && !profileVal.match(/^School$|^College$|^Graduate$/)) {
                         valid = false;
-                        wc.e(wzrk_msg["education-error"]);
+                        wc.e(wzrk_msg['education-error']);
                     }
 
-                    if (
-                        profileKey == "Age" &&
-                        typeof profileVal != STRING_CONSTANTS.UNDEFINED
-                    ) {
+                    if (profileKey == 'Age' && typeof profileVal != STRING_CONSTANTS.UNDEFINED) {
                         if (wzrk_util.isConvertibleToNumber(profileVal)) {
-                            profileObj["Age"] = +profileVal;
+                            profileObj['Age'] = +profileVal;
                         } else {
                             valid = false;
-                            wc.e(wzrk_msg["age-error"]);
+                            wc.e(wzrk_msg['age-error']);
                         }
                     }
 
                     // dob will come in like this - $dt_19470815 or dateObject
-                    if (profileKey == "DOB") {
-                        if (
-                            (!/^\$D_/.test(profileVal) ||
-                                (profileVal + "").length != 11) &&
-                            !wzrk_util.isDateObject(profileVal)
-                        ) {
+                    if (profileKey == 'DOB') {
+                        if (((!(/^\$D_/).test(profileVal) || (profileVal + "").length != 11)) && !wzrk_util.isDateObject(profileVal)) {
                             valid = false;
-                            wc.e(wzrk_msg["dob-error"]);
+                            wc.e(wzrk_msg['dob-error']);
                         }
 
                         if (wzrk_util.isDateObject(profileVal)) {
-                            profileObj[
-                                profileKey
-                                ] = wzrk_util.convertToWZRKDate(profileVal);
+                            profileObj[profileKey] = wzrk_util.convertToWZRKDate(profileVal);
                         }
                     } else if (wzrk_util.isDateObject(profileVal)) {
-                        profileObj[profileKey] = wzrk_util.convertToWZRKDate(
-                            profileVal
-                        );
+                        profileObj[profileKey] = wzrk_util.convertToWZRKDate(profileVal);
                     }
 
-                    if (
-                        profileKey == "Phone" &&
-                        !wzrk_util.isObjectEmpty(profileVal)
-                    ) {
-                        if (
-                            profileVal.length > 8 &&
-                            profileVal.charAt(0) == "+"
-                        ) {
-                            // valid phone number
-                            profileVal = profileVal.substring(
-                                1,
-                                profileVal.length
-                            );
+                    if (profileKey == 'Phone' && !wzrk_util.isObjectEmpty(profileVal)) {
+                        if (profileVal.length > 8 && (profileVal.charAt(0) == '+')) { // valid phone number
+                            profileVal = profileVal.substring(1, profileVal.length);
                             if (wzrk_util.isConvertibleToNumber(profileVal)) {
-                                profileObj["Phone"] = +profileVal;
+                                profileObj['Phone'] = +profileVal;
                             } else {
                                 valid = false;
-                                wc.e(
-                                    wzrk_msg["phone-format-error"] +
-                                    ". Removed."
-                                );
+                                wc.e(wzrk_msg['phone-format-error'] + ". Removed.");
                             }
                         } else {
                             valid = false;
-                            wc.e(wzrk_msg["phone-format-error"] + ". Removed.");
+                            wc.e(wzrk_msg['phone-format-error'] + ". Removed.");
                         }
                     }
+
 
                     if (!valid) {
                         delete profileObj[profileKey];
                     }
                 }
             }
+
         }
 
         return valid;
@@ -3592,29 +2755,31 @@ function __wizrocket() {
         if (wzrk_util.isString(enumVal) || wzrk_util.isNumber(enumVal)) {
             return "$E_" + enumVal;
         }
-        wc.e(wzrk_msg["enum-format-error"]);
+        wc.e(wzrk_msg['enum-format-error']);
     };
 
     // list of functions that the closure compiler shouldn't rename
     // https://developers.google.com/closure/compiler/docs/api-tutorial3
-    wiz["s"] = wiz.s;
-    wiz["is_onloadcalled"] = wiz.is_onloadcalled;
-    wiz["setDate"] = wiz.setDate;
-    wiz["enableWebPush"] = wiz.enableWebPush; // support for web push notifications
-    wiz["setEnum"] = wiz.setEnum;
-    wiz["tr"] = wiz.tr;
-    wiz["push"] = wiz.push;
-    wiz["closeIframe"] = wiz.closeIframe;
-    wiz["getEmail"] = wiz.getEmail;
-    wiz["unSubEmail"] = wiz.unSubEmail;
-    wiz["subEmail"] = wiz.subEmail;
-    wiz["logout"] = wiz.logout;
-    wiz["clear"] = wiz.clear;
-    wizrocket["getCleverTapID"] = wiz.getCleverTapID;
+    wiz['s'] = wiz.s;
+    wiz['is_onloadcalled'] = wiz.is_onloadcalled;
+    wiz['setDate'] = wiz.setDate;
+    wiz['enableWebPush'] = wiz.enableWebPush; // support for web push notifications
+    wiz['setEnum'] = wiz.setEnum;
+    wiz['tr'] = wiz.tr;
+    wiz['push'] = wiz.push;
+    wiz['closeIframe'] = wiz.closeIframe;
+    wiz['getEmail'] = wiz.getEmail;
+    wiz['unSubEmail'] = wiz.unSubEmail;
+    wiz['subEmail'] = wiz.subEmail;
+    wiz['logout'] = wiz.logout;
+    wiz['clear'] = wiz.clear;
+    wizrocket['getCleverTapID'] = wiz.getCleverTapID;
 
-    // ---------- compression part ----------
+
+// ---------- compression part ----------
 
     var LZS = {
+
         _f: String.fromCharCode,
 
         getKeyStr: function () {
@@ -3674,6 +2839,7 @@ function __wizrocket() {
         },
 
         convertStringToHex: function (s) {
+
             var byte_arr = [];
             for (var i = 0; i < s.length; i++) {
                 var value = s.charCodeAt(i);
@@ -3681,6 +2847,7 @@ function __wizrocket() {
                 byte_arr.push((value >> 8) & 255);
             }
             return LZS.convertToFormattedHex(byte_arr);
+
         },
 
         compressToBase64: function (input) {
@@ -3692,18 +2859,21 @@ function __wizrocket() {
             input = LZS.compress(input);
 
             while (i < input.length * 2) {
+
                 if (i % 2 == 0) {
                     chr1 = input.charCodeAt(i / 2) >> 8;
                     chr2 = input.charCodeAt(i / 2) & 255;
                     if (i / 2 + 1 < input.length)
                         chr3 = input.charCodeAt(i / 2 + 1) >> 8;
-                    else chr3 = NaN;
+                    else
+                        chr3 = NaN;
                 } else {
                     chr1 = input.charCodeAt((i - 1) / 2) & 255;
                     if ((i + 1) / 2 < input.length) {
                         chr2 = input.charCodeAt((i + 1) / 2) >> 8;
                         chr3 = input.charCodeAt((i + 1) / 2) & 255;
-                    } else chr2 = chr3 = NaN;
+                    } else
+                        chr2 = chr3 = NaN;
                 }
                 i += 3;
 
@@ -3718,21 +2888,19 @@ function __wizrocket() {
                     enc4 = 64;
                 }
 
-                output =
-                    output +
-                    LZS._keyStr.charAt(enc1) +
-                    LZS._keyStr.charAt(enc2) +
-                    LZS._keyStr.charAt(enc3) +
-                    LZS._keyStr.charAt(enc4);
+                output = output +
+                    LZS._keyStr.charAt(enc1) + LZS._keyStr.charAt(enc2) +
+                    LZS._keyStr.charAt(enc3) + LZS._keyStr.charAt(enc4);
+
             }
 
             return output;
         },
 
+
         compress: function (uncompressed) {
             if (uncompressed == null) return "";
-            var i,
-                value,
+            var i, value,
                 context_dictionary = {},
                 context_dictionaryToCreate = {},
                 context_c = "",
@@ -3749,34 +2917,19 @@ function __wizrocket() {
 
             for (ii = 0; ii < uncompressed.length; ii += 1) {
                 context_c = uncompressed.charAt(ii);
-                if (
-                    !Object.prototype.hasOwnProperty.call(
-                        context_dictionary,
-                        context_c
-                    )
-                ) {
+                if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
                     context_dictionary[context_c] = context_dictSize++;
                     context_dictionaryToCreate[context_c] = true;
                 }
 
                 context_wc = context_w + context_c;
-                if (
-                    Object.prototype.hasOwnProperty.call(
-                        context_dictionary,
-                        context_wc
-                    )
-                ) {
+                if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
                     context_w = context_wc;
                 } else {
-                    if (
-                        Object.prototype.hasOwnProperty.call(
-                            context_dictionaryToCreate,
-                            context_w
-                        )
-                    ) {
+                    if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
                         if (context_w.charCodeAt(0) < 256) {
                             for (i = 0; i < context_numBits; i++) {
-                                context_data_val = context_data_val << 1;
+                                context_data_val = (context_data_val << 1);
                                 if (context_data_position == 15) {
                                     context_data_position = 0;
                                     context_data_string += f(context_data_val);
@@ -3787,8 +2940,7 @@ function __wizrocket() {
                             }
                             value = context_w.charCodeAt(0);
                             for (i = 0; i < 8; i++) {
-                                context_data_val =
-                                    (context_data_val << 1) | (value & 1);
+                                context_data_val = (context_data_val << 1) | (value & 1);
                                 if (context_data_position == 15) {
                                     context_data_position = 0;
                                     context_data_string += f(context_data_val);
@@ -3801,8 +2953,7 @@ function __wizrocket() {
                         } else {
                             value = 1;
                             for (i = 0; i < context_numBits; i++) {
-                                context_data_val =
-                                    (context_data_val << 1) | value;
+                                context_data_val = (context_data_val << 1) | value;
                                 if (context_data_position == 15) {
                                     context_data_position = 0;
                                     context_data_string += f(context_data_val);
@@ -3814,8 +2965,7 @@ function __wizrocket() {
                             }
                             value = context_w.charCodeAt(0);
                             for (i = 0; i < 16; i++) {
-                                context_data_val =
-                                    (context_data_val << 1) | (value & 1);
+                                context_data_val = (context_data_val << 1) | (value & 1);
                                 if (context_data_position == 15) {
                                     context_data_position = 0;
                                     context_data_string += f(context_data_val);
@@ -3835,8 +2985,7 @@ function __wizrocket() {
                     } else {
                         value = context_dictionary[context_w];
                         for (i = 0; i < context_numBits; i++) {
-                            context_data_val =
-                                (context_data_val << 1) | (value & 1);
+                            context_data_val = (context_data_val << 1) | (value & 1);
                             if (context_data_position == 15) {
                                 context_data_position = 0;
                                 context_data_string += f(context_data_val);
@@ -3846,6 +2995,8 @@ function __wizrocket() {
                             }
                             value = value >> 1;
                         }
+
+
                     }
                     context_enlargeIn--;
                     if (context_enlargeIn == 0) {
@@ -3860,15 +3011,10 @@ function __wizrocket() {
 
             // Output the code for w.
             if (context_w !== "") {
-                if (
-                    Object.prototype.hasOwnProperty.call(
-                        context_dictionaryToCreate,
-                        context_w
-                    )
-                ) {
+                if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
                     if (context_w.charCodeAt(0) < 256) {
                         for (i = 0; i < context_numBits; i++) {
-                            context_data_val = context_data_val << 1;
+                            context_data_val = (context_data_val << 1);
                             if (context_data_position == 15) {
                                 context_data_position = 0;
                                 context_data_string += f(context_data_val);
@@ -3879,8 +3025,7 @@ function __wizrocket() {
                         }
                         value = context_w.charCodeAt(0);
                         for (i = 0; i < 8; i++) {
-                            context_data_val =
-                                (context_data_val << 1) | (value & 1);
+                            context_data_val = (context_data_val << 1) | (value & 1);
                             if (context_data_position == 15) {
                                 context_data_position = 0;
                                 context_data_string += f(context_data_val);
@@ -3905,8 +3050,7 @@ function __wizrocket() {
                         }
                         value = context_w.charCodeAt(0);
                         for (i = 0; i < 16; i++) {
-                            context_data_val =
-                                (context_data_val << 1) | (value & 1);
+                            context_data_val = (context_data_val << 1) | (value & 1);
                             if (context_data_position == 15) {
                                 context_data_position = 0;
                                 context_data_string += f(context_data_val);
@@ -3926,8 +3070,7 @@ function __wizrocket() {
                 } else {
                     value = context_dictionary[context_w];
                     for (i = 0; i < context_numBits; i++) {
-                        context_data_val =
-                            (context_data_val << 1) | (value & 1);
+                        context_data_val = (context_data_val << 1) | (value & 1);
                         if (context_data_position == 15) {
                             context_data_position = 0;
                             context_data_string += f(context_data_val);
@@ -3937,6 +3080,8 @@ function __wizrocket() {
                         }
                         value = value >> 1;
                     }
+
+
                 }
                 context_enlargeIn--;
                 if (context_enlargeIn == 0) {
@@ -3961,14 +3106,16 @@ function __wizrocket() {
 
             // Flush the last char
             while (true) {
-                context_data_val = context_data_val << 1;
+                context_data_val = (context_data_val << 1);
                 if (context_data_position == 15) {
                     context_data_string += f(context_data_val);
                     break;
-                } else context_data_position++;
+                }
+                else context_data_position++;
             }
             return context_data_string;
         }
+
     };
 
     LZS._keyStr = LZS.getKeyStr();
@@ -3979,15 +3126,15 @@ function __wizrocket() {
             if (wzrk_util.isDateValid(dt)) {
                 return "$D_" + dt;
             }
-            wc.e(wzrk_msg["date-format-error"]);
+            wc.e(wzrk_msg['date-format-error']);
         },
 
         isDateObject: function (input) {
-            return typeof input === "object" && input instanceof Date;
+            return typeof(input) === "object" && (input instanceof Date);
         },
 
         convertToWZRKDate: function (dateObj) {
-            return "$D_" + Math.round(dateObj.getTime() / 1000);
+            return ("$D_" + Math.round(dateObj.getTime() / 1000) );
         },
 
         isDateValid: function (date) {
@@ -3997,15 +3144,13 @@ function __wizrocket() {
             var m = matches[2] - 1;
             var y = matches[1];
             var composedDate = new Date(y, m, d);
-            return (
-                composedDate.getDate() == d &&
+            return composedDate.getDate() == d &&
                 composedDate.getMonth() == m &&
-                composedDate.getFullYear() == y
-            );
+                composedDate.getFullYear() == y;
         },
 
         isArray: function (input) {
-            return typeof input === "object" && input instanceof Array;
+            return typeof(input) === "object" && (input instanceof Array);
         },
 
         isObject: function (input) {
@@ -4014,14 +3159,16 @@ function __wizrocket() {
 
         isObjectEmpty: function (obj) {
             for (var prop in obj) {
-                if (obj.hasOwnProperty(prop)) return false;
+                if (obj.hasOwnProperty(prop))
+                    return false;
             }
             return true;
         },
 
         isString: function (input) {
-            return typeof input == "string" || input instanceof String;
+            return (typeof input == 'string' || input instanceof String);
         },
+
 
         // if yes, the convert using +number.
         isConvertibleToNumber: function (n) {
@@ -4030,7 +3177,7 @@ function __wizrocket() {
 
         //from here - http://stackoverflow.com/a/1421988/2456615
         isNumber: function (n) {
-            return /^-?[\d.]+(?:e-?\d+)?$/.test(n) && typeof n == "number";
+            return /^-?[\d.]+(?:e-?\d+)?$/.test(n) && typeof n == 'number';
         },
 
         arrayContains: function (arr, obj) {
@@ -4047,13 +3194,15 @@ function __wizrocket() {
 
         getURLParams: function (url) {
             var urlParams = {};
-            var idx = url.indexOf("?");
+            var idx = url.indexOf('?');
 
             if (idx > 1) {
+
                 var uri = url.substring(idx + 1);
 
+
                 var match,
-                    pl = /\+/g, // Regex for replacing addition symbol with a space
+                    pl = /\+/g,  // Regex for replacing addition symbol with a space
                     search = /([^&=]+)=?([^&]*)/g,
                     decode = function (s) {
                         var replacement = s.replace(pl, " ");
@@ -4065,44 +3214,36 @@ function __wizrocket() {
                         return replacement;
                     };
 
-                while ((match = search.exec(uri))) {
+
+                while (match = search.exec(uri)) {
                     urlParams[decode(match[1])] = decode(match[2]);
                 }
+
             }
             return urlParams;
         },
 
         getDomain: function (url) {
             if (url == "") return "";
-            var a = document.createElement("a");
+            var a = document.createElement('a');
             a.href = url;
             return a.hostname;
         },
+
 
         //keys can't be greater than 1024 chars, values can't be greater than 1024 chars
         removeUnsupportedChars: function (o) {
             if (typeof o == "object") {
                 for (var key in o) {
                     if (o.hasOwnProperty(key)) {
-                        var sanitizedVal = wzrk_util.removeUnsupportedChars(
-                            o[key]
-                        );
-                        var sanitizedKey = wzrk_util.isString(key)
-                            ? wzrk_util.sanitize(key, unsupportedKeyCharRegex)
-                            : key;
+                        var sanitizedVal = wzrk_util.removeUnsupportedChars(o[key]);
+                        var sanitizedKey = wzrk_util.isString(key) ? wzrk_util.sanitize(key, unsupportedKeyCharRegex) : key;
 
                         if (wzrk_util.isString(key)) {
-                            sanitizedKey = wzrk_util.sanitize(
-                                key,
-                                unsupportedKeyCharRegex
-                            );
+                            sanitizedKey = wzrk_util.sanitize(key, unsupportedKeyCharRegex);
                             if (sanitizedKey.length > 1024) {
                                 sanitizedKey = sanitizedKey.substring(0, 1024);
-                                $WZRK_WR.reportError(
-                                    520,
-                                    sanitizedKey +
-                                    "... length exceeded 1024 chars. Trimmed."
-                                );
+                                $WZRK_WR.reportError(520, sanitizedKey + "... length exceeded 1024 chars. Trimmed.");
                             }
                         } else {
                             sanitizedKey = key;
@@ -4118,10 +3259,7 @@ function __wizrocket() {
                     val = wzrk_util.sanitize(o, unsupportedValueCharRegex);
                     if (val.length > 1024) {
                         val = val.substring(0, 1024);
-                        $WZRK_WR.reportError(
-                            521,
-                            val + "... length exceeded 1024 chars. Trimmed."
-                        );
+                        $WZRK_WR.reportError(521, val + "... length exceeded 1024 chars. Trimmed.");
                     }
                 } else {
                     val = o;
@@ -4132,16 +3270,14 @@ function __wizrocket() {
         },
 
         sanitize: function (input, regex) {
-            return input.replace(regex, "");
+            return input.replace(regex, '');
         },
 
         isLocalStorageSupported: function () {
             try {
-                window.localStorage.setItem("wzrk_debug", "12345678");
-                window.localStorage.removeItem("wzrk_debug");
-                return (
-                    "localStorage" in window && window["localStorage"] !== null
-                );
+                window.localStorage.setItem('wzrk_debug', '12345678');
+                window.localStorage.removeItem('wzrk_debug');
+                return 'localStorage' in window && window['localStorage'] !== null;
             } catch (e) {
                 return false;
             }
@@ -4152,12 +3288,7 @@ function __wizrocket() {
             if (wzrk_util.isLocalStorageSupported()) {
                 campObj = localStorage[STRING_CONSTANTS.CAMP_COOKIE_NAME];
                 if (typeof campObj != STRING_CONSTANTS.UNDEFINED) {
-                    campObj = JSON.parse(
-                        decodeURIComponent(campObj).replace(
-                            singleQuoteRegex,
-                            '"'
-                        )
-                    );
+                    campObj = JSON.parse(decodeURIComponent(campObj).replace(singleQuoteRegex, "\""));
                 } else {
                     campObj = {};
                 }
@@ -4168,17 +3299,13 @@ function __wizrocket() {
         saveCampaignObject: function (campaignObj) {
             if (wzrk_util.isLocalStorageSupported()) {
                 var campObj = JSON.stringify(campaignObj);
-                localStorage[
-                    STRING_CONSTANTS.CAMP_COOKIE_NAME
-                    ] = encodeURIComponent(campObj);
+                localStorage[STRING_CONSTANTS.CAMP_COOKIE_NAME] = encodeURIComponent(campObj);
             }
         },
 
+
         isPersonalizationActive: function () {
-            return (
-                wzrk_util.isLocalStorageSupported() &&
-                wizrocket["enablePersonalization"]
-            );
+            return (wzrk_util.isLocalStorageSupported() && wizrocket['enablePersonalization'])
         },
 
         getToday: function () {
@@ -4186,64 +3313,44 @@ function __wizrocket() {
             return t.getFullYear() + "" + t.getMonth() + "" + t.getDay();
         },
         getNow: function () {
-            return Math.floor(new Date().getTime() / 1000);
+            return Math.floor(((new Date()).getTime()) / 1000);
         }
+
     };
 
-    // leading spaces, dot, colon, dollar, single quote, double quote, backslash, trailing spaces
-    var unsupportedKeyCharRegex = new RegExp(
-        "^\\s+|\\.|:|\\$|'|\"|\\\\|\\s+$",
-        "g"
-    );
+// leading spaces, dot, colon, dollar, single quote, double quote, backslash, trailing spaces
+    var unsupportedKeyCharRegex = new RegExp("^\\s+|\\\.|\:|\\\$|\'|\"|\\\\|\\s+$", "g");
 
-    // leading spaces, single quote, double quote, backslash, trailing spaces
-    var unsupportedValueCharRegex = new RegExp("^\\s+|'|\"|\\\\|\\s+$", "g");
+// leading spaces, single quote, double quote, backslash, trailing spaces
+    var unsupportedValueCharRegex = new RegExp("^\\s+|\'|\"|\\\\|\\s+$", "g");
 
-    //used to handle cookies in Opera mini
-    var doubleQuoteRegex = new RegExp('"', "g");
-    var singleQuoteRegex = new RegExp("'", "g");
+//used to handle cookies in Opera mini
+    var doubleQuoteRegex = new RegExp("\"", "g");
+    var singleQuoteRegex = new RegExp("\'", "g");
+
 
     var wzrk_msg = {};
     var wzrk_error_txt = "CleverTap error: ";
     var data_not_sent_txt = "This property has been ignored.";
-    wzrk_msg["embed-error"] = wzrk_error_txt + "Incorrect embed script.";
-    wzrk_msg["event-error"] =
-        wzrk_error_txt + "Event structure not valid. " + data_not_sent_txt;
-    wzrk_msg["gender-error"] =
-        wzrk_error_txt +
-        "Gender value should be either M or F. " +
-        data_not_sent_txt;
-    wzrk_msg["employed-error"] =
-        wzrk_error_txt +
-        "Employed value should be either Y or N. " +
-        data_not_sent_txt;
-    wzrk_msg["married-error"] =
-        wzrk_error_txt +
-        "Married value should be either Y or N. " +
-        data_not_sent_txt;
-    wzrk_msg["education-error"] =
-        wzrk_error_txt +
-        "Education value should be either School, College or Graduate. " +
-        data_not_sent_txt;
-    wzrk_msg["age-error"] =
-        wzrk_error_txt + "Age value should be a number. " + data_not_sent_txt;
-    wzrk_msg["dob-error"] =
-        wzrk_error_txt + "DOB value should be a Date Object";
-    wzrk_msg["obj-arr-error"] =
-        wzrk_error_txt + "Expecting Object array in profile";
-    wzrk_msg["date-format-error"] =
-        wzrk_error_txt +
-        "setDate(number). number should be formatted as yyyymmdd";
-    wzrk_msg["enum-format-error"] =
-        wzrk_error_txt + "setEnum(value). value should be a string or a number";
-    wzrk_msg["phone-format-error"] =
-        wzrk_error_txt +
-        "Phone number should be formatted as +[country code][number]";
+    wzrk_msg['embed-error'] = wzrk_error_txt + "Incorrect embed script.";
+    wzrk_msg['event-error'] = wzrk_error_txt + "Event structure not valid. " + data_not_sent_txt;
+    wzrk_msg['gender-error'] = wzrk_error_txt + "Gender value should be either M or F. " + data_not_sent_txt;
+    wzrk_msg['employed-error'] = wzrk_error_txt + "Employed value should be either Y or N. " + data_not_sent_txt;
+    wzrk_msg['married-error'] = wzrk_error_txt + "Married value should be either Y or N. " + data_not_sent_txt;
+    wzrk_msg['education-error'] = wzrk_error_txt + "Education value should be either School, College or Graduate. " + data_not_sent_txt;
+    wzrk_msg['age-error'] = wzrk_error_txt + "Age value should be a number. " + data_not_sent_txt;
+    wzrk_msg['dob-error'] = wzrk_error_txt + "DOB value should be a Date Object";
+    wzrk_msg['obj-arr-error'] = wzrk_error_txt + "Expecting Object array in profile";
+    wzrk_msg['date-format-error'] = wzrk_error_txt + "setDate(number). number should be formatted as yyyymmdd";
+    wzrk_msg['enum-format-error'] = wzrk_error_txt + "setEnum(value). value should be a string or a number";
+    wzrk_msg['phone-format-error'] = wzrk_error_txt + "Phone number should be formatted as +[country code][number]";
+
 } // function __wizrocket
 
 $WZRK_WR = new __wizrocket();
 $CLTP_WR = $WZRK_WR;
 $WZRK_WR.init(); //this should always be the last in the JS file, as it needs all vars/functions to be defined to work.
+
 
 /**
  * @preserve Copyright WizRocket, Inc. (ver.@timestamp@)
