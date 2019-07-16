@@ -4,12 +4,12 @@
         <link rel="manifest" href="/manifest.json">
         <script type="text/javascript">
             var clevertap = { event: [], profile: [], account: [] };
-            clevertap.account.push({ id: "R74-K9K-R55Z" });
+            clevertap.account.push({ id: "WRK-W48-RR5Z" });
             (function() {
                 var wzrk = document.createElement("script");
                 wzrk.type = "text/javascript";
                 wzrk.async = true;
-                wzrk.src = "a-lc-final-min.js";
+                wzrk.src = "a-test.js";
                 var s = document.getElementsByTagName("script")[0];
                 s.parentNode.insertBefore(wzrk, s);
             })();
@@ -111,6 +111,17 @@
                 getLS();
             }
 
+            function onClickOULIdentitySame() {
+                let value = document.getElementById("constantOULIdentity").value;
+                clevertap.onUserLogin.push({
+                    Site: {
+                        // Email: `${Math.ceil(Math.random() * 100012)}@gmail.com`
+                        Identity: `${value}`
+                    }
+                });
+                getLS();
+            }
+
             function onClickPP() {
                 clevertap.profile.push({
                     Site: {
@@ -127,6 +138,15 @@
                 clevertap.profile.push({
                     Site: {
                         Email: `${value}@gmail.com`
+                    }
+                });
+            }
+
+            function onClickPPIdentitySame() {
+                let value = document.getElementById("constantPPIdentity").value;
+                clevertap.profile.push({
+                    Site: {
+                        Identity: `${value}`
                     }
                 });
             }
@@ -174,6 +194,11 @@
                 localStorage.clear();
                 getLS();
             }
+
+            function getProfile() {
+                var customerType = clevertap.profile.getAttribute("Customer type");
+                console.log(customerType);
+            }
         </script>
         <link rel="stylesheet" href="style.css" />
         <!-- <br />
@@ -212,6 +237,11 @@
         <button onclick="onClickOULSame()" class="inputBtn">OUL</button>
         <br />
         <hr />
+        <p>On User Login Identity</p>
+        <input type="text" id="constantOULIdentity" class="textInput" />
+        <button onclick="onClickOULIdentitySame()" class="inputBtn">OUL Identity</button>
+        <br />
+        <hr />
         <p>Profile Push</p>
         <input type="text" id="constantPP" class="textInput" /><input
             type="text"
@@ -220,6 +250,11 @@
             class="textInput"
         />
         <button onclick="onClickPPSame()" class="inputBtn">PP</button>
+        <hr />
+        <p>PP Identity</p>
+        <input type="text" id="constantPPIdentity" class="textInput" />
+        <button onclick="onClickPPIdentitySame()" class="inputBtn">PP Identity</button>
+        <br />
         <hr />
         <input type="checkbox" name="event" value="adc" id="adc" /> Added to
         Cart <br />
@@ -246,6 +281,7 @@
         >
             Clear Local Storage
         </button>
+        <br>
         <br />
         <br />
         <br />
