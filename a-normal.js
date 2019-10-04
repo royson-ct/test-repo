@@ -475,6 +475,7 @@ function __wizrocket() {
     pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
     pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
 
+    wiz.d(`event-arp : ${JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))}`)
 
     wiz.saveAndFireRequest(pageLoadUrl, false);
   };
@@ -611,6 +612,7 @@ function __wizrocket() {
       return wiz.addToURL(url, 'arp', wiz.compressData(JSON.stringify(_arp)));
     }
     if (wzrk_util.isLocalStorageSupported() && typeof localStorage[STRING_CONSTANTS.ARP_COOKIE] != STRING_CONSTANTS.UNDEFINED) {
+      wiz.d(`arp-request : ${JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))}`)
       return wiz.addToURL(url, 'arp', wiz.compressData(JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))));
     }
     return url;
@@ -1091,6 +1093,7 @@ function __wizrocket() {
 
           wiz.addFlags(data);
           var compressedData = wiz.compressData(JSON.stringify(data));
+          wiz.d(`oul-arp : ${JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))}`)
 
           var pageLoadUrl = dataPostURL;
           pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
