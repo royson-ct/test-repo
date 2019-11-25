@@ -1,7 +1,7 @@
 function __wizrocket() {
 
 
-  var targetDomain = 'eu1.wzrkt.com';
+  var targetDomain = 'wzrkt.com';
   // var targetDomain = 'localhost:3838'; //ALWAYS comment this line before deploying
 
   var wz_pr = "https:";
@@ -32,6 +32,24 @@ function __wizrocket() {
   var COOKIE_EXPIRY = 86400 * 365 * 10; //10 years in seconds. Seconds in an days * days in an year * number of years
   var LRU_CACHE, LRU_CACHE_SIZE = 100;
 
+  // for VAPID web push
+  function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/')
+    ;
+    var rawData = window.atob(base64);
+    var processedData = []
+    for (var i=0; i<rawData.length; i++) {
+      processedData.push(rawData.charCodeAt(i))
+    }
+    return Uint8Array.from(processedData);
+  }
+
+  var fcmPublicKey = null;
+
+
   var STRING_CONSTANTS = {
     CLEAR: 'clear',
     CHARGED_ID: 'Charged ID',
@@ -55,7 +73,8 @@ function __wizrocket() {
     CT_OPTOUT_KEY: 'ct_optout',
     OPTOUT_COOKIE_ENDSWITH: ':OO',
     USEIP_KEY: 'useIP',
-    LRU_CACHE: 'WZRK_X'
+    LRU_CACHE: 'WZRK_X',
+    IS_OUL: "isOUL"
   };
 
   // path to reference the JS for our dialog
@@ -108,8 +127,11 @@ function __wizrocket() {
   };
 
 
-  wiz.enableWebPush = function (enabled) {
+  wiz.enableWebPush = function (enabled, applicationServerKey) {
     webPushEnabled = enabled;
+    if(applicationServerKey != null) {
+      wiz.setApplicationServerKey(applicationServerKey);
+    }
     if (webPushEnabled && notifApi.notifEnabledFromApi) {
       wiz.handleNotificationRegistration(notifApi.displayArgs);
     } else if (!webPushEnabled && notifApi.notifEnabledFromApi) {
@@ -127,7 +149,16 @@ function __wizrocket() {
       navigator["serviceWorker"]['register'](serviceWorkerPath)['then'](function () {
         return navigator['serviceWorker']['ready'];
       })['then'](function (serviceWorkerRegistration) {
-        serviceWorkerRegistration['pushManager']['subscribe']({'userVisibleOnly': true})
+
+        var subscribeObj = {
+          userVisibleOnly: true
+        }
+
+        if(fcmPublicKey != null) {
+          subscribeObj.applicationServerKey = urlBase64ToUint8Array(fcmPublicKey)
+        }
+
+        serviceWorkerRegistration['pushManager']['subscribe'](subscribeObj)
           ['then'](function (subscription) {
           wc.l('Service Worker registered. Endpoint: ' + subscription['endpoint']);
 
@@ -230,7 +261,7 @@ function __wizrocket() {
       targetDomain = region + '.' + targetDomain;
     }
 
-    dataPostURL = wz_pr + '//' + targetDomain + '/a?t=92';
+    dataPostURL = wz_pr + '//' + targetDomain + '/a?t=93';
     recorderURL = wz_pr + '//' + targetDomain + '/r?r=1';
     emailURL = wz_pr + '//' + targetDomain + '/e?r=1';
 
@@ -475,7 +506,6 @@ function __wizrocket() {
     pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
     pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
 
-    wc.d(`event-arp : ${JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))}`)
 
     wiz.saveAndFireRequest(pageLoadUrl, false);
   };
@@ -612,7 +642,6 @@ function __wizrocket() {
       return wiz.addToURL(url, 'arp', wiz.compressData(JSON.stringify(_arp)));
     }
     if (wzrk_util.isLocalStorageSupported() && typeof localStorage[STRING_CONSTANTS.ARP_COOKIE] != STRING_CONSTANTS.UNDEFINED) {
-      wc.d(`arp-request : ${JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))}`)
       return wiz.addToURL(url, 'arp', wiz.compressData(JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))));
     }
     return url;
@@ -675,8 +704,10 @@ function __wizrocket() {
       keyOrder = [];
       LRU_CACHE = LRU_CACHE.cache;
       for (var entry in LRU_CACHE) {
-        lru_cache[LRU_CACHE[entry][0]] = LRU_CACHE[entry][1];
-        keyOrder.push(LRU_CACHE[entry][0]);
+        if(LRU_CACHE.hasOwnProperty(entry)) {
+          lru_cache[LRU_CACHE[entry][0]] = LRU_CACHE[entry][1];
+          keyOrder.push(LRU_CACHE[entry][0]);
+        }
 
       }
       this.cache = lru_cache;
@@ -719,10 +750,12 @@ function __wizrocket() {
       var obj_to_array = [];
       var all_keys = keyOrder;
       for (var index in all_keys) {
-        var temp = [];
-        temp.push(all_keys[index]);
-        temp.push(cache[all_keys[index]]);
-        obj_to_array.push(temp);
+        if(all_keys.hasOwnProperty(index)) {
+          var temp = [];
+          temp.push(all_keys[index]);
+          temp.push(cache[all_keys[index]]);
+          obj_to_array.push(temp);
+        }
       }
       wiz.saveToLSorCookie(STRING_CONSTANTS.LRU_CACHE, {
         cache: obj_to_array
@@ -733,11 +766,13 @@ function __wizrocket() {
       if (givenVal == null) return null;
       var all_keys = keyOrder;
       for (var index in all_keys) {
-        if (
-          this.cache[all_keys[index]] != null &&
-          this.cache[all_keys[index]] === givenVal
-        ) {
-          return all_keys[index];
+        if(all_keys.hasOwnProperty(index)) {
+          if (
+            this.cache[all_keys[index]] != null &&
+            this.cache[all_keys[index]] === givenVal
+          ) {
+            return all_keys[index];
+          }
         }
       }
       return null;
@@ -764,10 +799,12 @@ function __wizrocket() {
       var new_cache = {};
       var indexToDelete;
       for (var index in all_keys) {
-        if (all_keys[index] !== key) {
-          new_cache[all_keys[index]] = obj[all_keys[index]];
-        } else {
-          indexToDelete = index;
+        if(all_keys.hasOwnProperty(index)) {
+          if (all_keys[index] !== key) {
+            new_cache[all_keys[index]] = obj[all_keys[index]];
+          } else {
+            indexToDelete = index;
+          }
         }
       }
       all_keys.splice(indexToDelete, 1);
@@ -878,6 +915,13 @@ function __wizrocket() {
     wiz.setMetaProp(STRING_CONSTANTS.CLEAR, true);
   };
 
+
+  /*
+        We dont set the arp in cache for deregister requests.
+        For deregister requests we check for 'skipResARP' flag payload. If present we skip it.
+
+        Whenever we get 'isOUL' flag true in payload we delete the existing ARP instead of updating it.
+     */
   wiz.arp = function (jsonMap) {
     // For unregister calls dont set arp in LS
     if(typeof jsonMap["skipResARP"] !== STRING_CONSTANTS.UNDEFINED && jsonMap["skipResARP"]) {
@@ -885,16 +929,15 @@ function __wizrocket() {
       return null;
     }
 
+    var isOULARP = (typeof jsonMap[STRING_CONSTANTS.IS_OUL] !== STRING_CONSTANTS.UNDEFINED
+      && jsonMap[STRING_CONSTANTS.IS_OUL] === true) ? true : false;
+
     if (wzrk_util.isLocalStorageSupported()) {
       try {
         var arpFromStorage = wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE);
-        if (typeof arpFromStorage == STRING_CONSTANTS.UNDEFINED) {
+        if (typeof arpFromStorage == STRING_CONSTANTS.UNDEFINED || isOULARP) {
           arpFromStorage = {};
         }
-
-        wc.d(`arp-response : ${JSON.stringify(jsonMap)}`)
-        wc.d(`arp-storage : ${JSON.stringify(arpFromStorage)}`)
-
 
         for (var key in jsonMap) {
           if (jsonMap.hasOwnProperty(key)) {
@@ -919,55 +962,70 @@ function __wizrocket() {
     if (wzrk_util.isArray(profileArr) && profileArr.length > 0) {
 
       for (var index in profileArr) {
-        var outerObj = profileArr[index];
-        var data = {};
-        var profileObj;
-        if (typeof outerObj['Site'] != STRING_CONSTANTS.UNDEFINED) {       //organic data from the site
-          profileObj = outerObj['Site'];
-          if (wzrk_util.isObjectEmpty(profileObj) || !wiz.isProfileValid(profileObj)) {
-            return;
+        if(profileArr.hasOwnProperty(index)) {
+          var outerObj = profileArr[index];
+          var data = {};
+          var profileObj;
+          if (typeof outerObj['Site'] != STRING_CONSTANTS.UNDEFINED) {       //organic data from the site
+            profileObj = outerObj['Site'];
+            if (wzrk_util.isObjectEmpty(profileObj) || !wiz.isProfileValid(profileObj)) {
+              return;
+            }
+
+          } else if (typeof outerObj['Facebook'] != STRING_CONSTANTS.UNDEFINED) {   //fb connect data
+            var FbProfileObj = outerObj['Facebook'];
+            //make sure that the object contains any data at all
+
+            if (!wzrk_util.isObjectEmpty(FbProfileObj) && (!FbProfileObj['error'])) {
+              profileObj = wiz.processFBUserObj(FbProfileObj);
+            }
+
+          } else if (typeof outerObj['Google Plus'] != STRING_CONSTANTS.UNDEFINED) {
+            var GPlusProfileObj = outerObj['Google Plus'];
+            if (!wzrk_util.isObjectEmpty(GPlusProfileObj) && (!GPlusProfileObj['error'])) {
+              profileObj = wiz.processGPlusUserObj(GPlusProfileObj);
+            }
           }
+          if (typeof profileObj != STRING_CONSTANTS.UNDEFINED && (!wzrk_util.isObjectEmpty(profileObj))) {   // profile got set from above
+            data['type'] = "profile";
+            if (typeof profileObj['tz'] === STRING_CONSTANTS.UNDEFINED) {
+              //try to auto capture user timezone if not present
+              profileObj['tz'] = new Date().toString().match(/([A-Z]+[\+-][0-9]+)/)[1];
+            }
 
-        } else if (typeof outerObj['Facebook'] != STRING_CONSTANTS.UNDEFINED) {   //fb connect data
-          var FbProfileObj = outerObj['Facebook'];
-          //make sure that the object contains any data at all
+            data['profile'] = profileObj;
+            wiz.addToLocalProfileMap(profileObj, true);
+            data = wiz.addSystemDataToObject(data, undefined);
 
-          if (!wzrk_util.isObjectEmpty(FbProfileObj) && (!FbProfileObj['error'])) {
-            profileObj = wiz.processFBUserObj(FbProfileObj);
+            wiz.addFlags(data);
+            var compressedData = wiz.compressData(JSON.stringify(data));
+
+            var pageLoadUrl = dataPostURL;
+            pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
+            pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
+
+            wiz.saveAndFireRequest(pageLoadUrl, blockRequeust);
+
           }
-
-        } else if (typeof outerObj['Google Plus'] != STRING_CONSTANTS.UNDEFINED) {
-          var GPlusProfileObj = outerObj['Google Plus'];
-          if (!wzrk_util.isObjectEmpty(GPlusProfileObj) && (!GPlusProfileObj['error'])) {
-            profileObj = wiz.processGPlusUserObj(GPlusProfileObj);
-          }
-        }
-        if (typeof profileObj != STRING_CONSTANTS.UNDEFINED && (!wzrk_util.isObjectEmpty(profileObj))) {   // profile got set from above
-          data['type'] = "profile";
-          if (typeof profileObj['tz'] === STRING_CONSTANTS.UNDEFINED) {
-            //try to auto capture user timezone if not present
-            profileObj['tz'] = new Date().toString().match(/([A-Z]+[\+-][0-9]+)/)[1];
-          }
-
-          data['profile'] = profileObj;
-          wiz.addToLocalProfileMap(profileObj, true);
-          data = wiz.addSystemDataToObject(data, undefined);
-
-          wiz.addFlags(data);
-          var compressedData = wiz.compressData(JSON.stringify(data));
-
-          var pageLoadUrl = dataPostURL;
-          pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
-          pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
-
-          wiz.saveAndFireRequest(pageLoadUrl, blockRequeust);
-
         }
       }
     }
   };
 
+  /*
+        anonymousUser   => Only GUID present.
+        foundInCache    => Identity used in On User Login is present in LRU_CACHE. So use the guid associated with it.
+
+        Clear the cache in case on On User Login and Block all the request till we get resume requests flag in the response.
+        When user is found in Cache or the user is anonymous then dont block any requests. Just clear cache (handleCookieFromCache)
+
+
+        On every On User Login we deregister the token for older User.
+        If new user is found in Cache then we call deregister function now
+        Else we call it once we get guid for new user in 'wiz.s' function.
+     */
   wiz.processOUL = function (profileArr) {
+    var sendOULFlag = true;
     var addToK = function (ids) {
       var k = wiz.readFromLSorCookie(STRING_CONSTANTS.KCOOKIE_NAME);
       var g = wiz.readFromLSorCookie(STRING_CONSTANTS.GCOOKIE_NAME);
@@ -996,11 +1054,13 @@ function __wizrocket() {
           }
         } else {
           for (var idx in ids) {
-            var id = ids[idx];
-            if (LRU_CACHE.cache[id]) {
-              kId = id;
-              foundInCache = true;
-              break;
+            if(ids.hasOwnProperty(idx)) {
+              var id = ids[idx];
+              if (LRU_CACHE.cache[id]) {
+                kId = id;
+                foundInCache = true;
+                break;
+              }
             }
           }
         }
@@ -1009,6 +1069,8 @@ function __wizrocket() {
           if (kId !== LRU_CACHE.getLastKey()) {
             // Same User
             handleCookieFromCache();
+          } else {
+            sendOULFlag = false;
           }
           var g_from_cache = LRU_CACHE.get(kId);
           LRU_CACHE.set(kId, g_from_cache);
@@ -1027,6 +1089,7 @@ function __wizrocket() {
             if (wiz.isValueValid(g)) {
               gcookie = g;
               wiz.saveToLSorCookie(STRING_CONSTANTS.GCOOKIE_NAME, g);
+              sendOULFlag = false;
             }
           }
           kId = ids[0];
@@ -1039,68 +1102,79 @@ function __wizrocket() {
     if (wzrk_util.isArray(profileArr) && profileArr.length > 0) {
 
       for (var index in profileArr) {
-        var outerObj = profileArr[index];
-        var data = {};
-        var profileObj;
-        if (typeof outerObj['Site'] != STRING_CONSTANTS.UNDEFINED) {       //organic data from the site
-          profileObj = outerObj['Site'];
-          if (wzrk_util.isObjectEmpty(profileObj) || !wiz.isProfileValid(profileObj)) {
-            return;
-          }
-
-        } else if (typeof outerObj['Facebook'] != STRING_CONSTANTS.UNDEFINED) {   //fb connect data
-          var FbProfileObj = outerObj['Facebook'];
-          //make sure that the object contains any data at all
-
-          if (!wzrk_util.isObjectEmpty(FbProfileObj) && (!FbProfileObj['error'])) {
-            profileObj = wiz.processFBUserObj(FbProfileObj);
-          }
-
-        } else if (typeof outerObj['Google Plus'] != STRING_CONSTANTS.UNDEFINED) {
-          var GPlusProfileObj = outerObj['Google Plus'];
-          if (!wzrk_util.isObjectEmpty(GPlusProfileObj) && (!GPlusProfileObj['error'])) {
-            profileObj = wiz.processGPlusUserObj(GPlusProfileObj);
-          }
-        }
-        if (typeof profileObj != STRING_CONSTANTS.UNDEFINED && (!wzrk_util.isObjectEmpty(profileObj))) {   // profile got set from above
-          data['type'] = "profile";
-          if (typeof profileObj['tz'] === STRING_CONSTANTS.UNDEFINED) {
-            //try to auto capture user timezone if not present
-            profileObj['tz'] = new Date().toString().match(/([A-Z]+[\+-][0-9]+)/)[1];
-          }
-
-          data['profile'] = profileObj;
-          var ids = [];
-          if (wzrk_util.isLocalStorageSupported()) {
-            if (typeof profileObj['Identity'] != STRING_CONSTANTS.UNDEFINED) {
-              ids.push(profileObj['Identity']);
+        if(profileArr.hasOwnProperty(index)) {
+          var outerObj = profileArr[index];
+          var data = {};
+          var profileObj;
+          if (typeof outerObj['Site'] != STRING_CONSTANTS.UNDEFINED) {       //organic data from the site
+            profileObj = outerObj['Site'];
+            if (wzrk_util.isObjectEmpty(profileObj) || !wiz.isProfileValid(profileObj)) {
+              return;
             }
-            if (typeof profileObj['Email'] != STRING_CONSTANTS.UNDEFINED) {
-              ids.push(profileObj['Email']);
+
+          } else if (typeof outerObj['Facebook'] != STRING_CONSTANTS.UNDEFINED) {   //fb connect data
+            var FbProfileObj = outerObj['Facebook'];
+            //make sure that the object contains any data at all
+
+            if (!wzrk_util.isObjectEmpty(FbProfileObj) && (!FbProfileObj['error'])) {
+              profileObj = wiz.processFBUserObj(FbProfileObj);
             }
-            if (typeof profileObj['GPID'] != STRING_CONSTANTS.UNDEFINED) {
-              ids.push("GP:" + profileObj['GPID']);
-            }
-            if (typeof profileObj['FBID'] != STRING_CONSTANTS.UNDEFINED) {
-              ids.push("FB:" + profileObj['FBID']);
-            }
-            if (ids.length > 0) {
-              addToK(ids);
+
+          } else if (typeof outerObj['Google Plus'] != STRING_CONSTANTS.UNDEFINED) {
+            var GPlusProfileObj = outerObj['Google Plus'];
+            if (!wzrk_util.isObjectEmpty(GPlusProfileObj) && (!GPlusProfileObj['error'])) {
+              profileObj = wiz.processGPlusUserObj(GPlusProfileObj);
             }
           }
-          wiz.addToLocalProfileMap(profileObj, true);
-          data = wiz.addSystemDataToObject(data, undefined);
+          if (typeof profileObj != STRING_CONSTANTS.UNDEFINED && (!wzrk_util.isObjectEmpty(profileObj))) {   // profile got set from above
+            data['type'] = "profile";
+            if (typeof profileObj['tz'] === STRING_CONSTANTS.UNDEFINED) {
+              //try to auto capture user timezone if not present
+              profileObj['tz'] = new Date().toString().match(/([A-Z]+[\+-][0-9]+)/)[1];
+            }
 
-          wiz.addFlags(data);
-          var compressedData = wiz.compressData(JSON.stringify(data));
-          wc.d(`oul-arp : ${JSON.stringify(wiz.readFromLSorCookie(STRING_CONSTANTS.ARP_COOKIE))}`)
+            data['profile'] = profileObj;
+            var ids = [];
+            if (wzrk_util.isLocalStorageSupported()) {
+              if (typeof profileObj['Identity'] != STRING_CONSTANTS.UNDEFINED) {
+                ids.push(profileObj['Identity']);
+              }
+              if (typeof profileObj['Email'] != STRING_CONSTANTS.UNDEFINED) {
+                ids.push(profileObj['Email']);
+              }
+              if (typeof profileObj['GPID'] != STRING_CONSTANTS.UNDEFINED) {
+                ids.push("GP:" + profileObj['GPID']);
+              }
+              if (typeof profileObj['FBID'] != STRING_CONSTANTS.UNDEFINED) {
+                ids.push("FB:" + profileObj['FBID']);
+              }
+              if (ids.length > 0) {
+                addToK(ids);
+              }
+            }
+            wiz.addToLocalProfileMap(profileObj, true);
+            data = wiz.addSystemDataToObject(data, undefined);
 
-          var pageLoadUrl = dataPostURL;
-          pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
-          pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
+            wiz.addFlags(data);
+            // Adding 'isOUL' flag in true for OUL cases which.
+            // This flag tells LC to create a new arp object.
+            // Also we will receive the same flag in response arp which tells to delete existing arp object.
+            if(sendOULFlag) {
+              data[STRING_CONSTANTS.IS_OUL] = true;
+            }
 
-          wiz.saveAndFireRequest(pageLoadUrl, blockRequeust);
+            var compressedData = wiz.compressData(JSON.stringify(data));
 
+            var pageLoadUrl = dataPostURL;
+            pageLoadUrl = wiz.addToURL(pageLoadUrl, "type", EVT_PUSH);
+            pageLoadUrl = wiz.addToURL(pageLoadUrl, "d", compressedData);
+
+            // Whenever sendOULFlag is true then dont send arp and gcookie (guid in memory in the request)
+            // Also when this flag is set we will get another flag from LC in arp which tells us to delete arp
+            // stored in the cache and replace it with the response arp.
+            wiz.saveAndFireRequest(pageLoadUrl, blockRequeust, sendOULFlag);
+
+          }
         }
       }
     }
@@ -1229,7 +1303,7 @@ function __wizrocket() {
     }
   };
 
-  wiz.saveAndFireRequest = function (url, override) {
+  wiz.saveAndFireRequest = function (url, override, sendOULFlag) {
 
     var now = wzrk_util.getNow();
     url = wiz.addToURL(url, "rn", ++REQ_N);
@@ -1245,7 +1319,7 @@ function __wizrocket() {
         seqNo = 0;
       }
 
-      wiz.fireRequest(data);
+      wiz.fireRequest(data, false, sendOULFlag);
 
     } else {
       wc.d("Not fired due to block request - " + blockRequeust + " or clearCookie - " + clearCookie);
@@ -1667,7 +1741,7 @@ function __wizrocket() {
           var kId_from_LS = wiz.readFromLSorCookie(
             STRING_CONSTANTS.KCOOKIE_NAME
           );
-          if (kId_from_LS != null && kId_from_LS["id"]) {
+          if (kId_from_LS != null && kId_from_LS["id"] && resume) {
             var guidFromLRUCache = LRU_CACHE.cache[kId_from_LS["id"]];
             if (!guidFromLRUCache) {
               LRU_CACHE.set(kId_from_LS["id"], global);
@@ -1860,7 +1934,7 @@ function __wizrocket() {
 
   var MAX_TRIES = 50;
 
-  var fireRequest = function (url, tries, skipARP) {
+  var fireRequest = function (url, tries, skipARP, sendOULFlag) {
     if (dropRequestDueToOptOut()) {
       wc.d("req dropped due to optout cookie: " + gcookie);
       return;
@@ -1871,16 +1945,18 @@ function __wizrocket() {
       tries < MAX_TRIES
     ) {
       setTimeout(function () {
-        fireRequest(url, tries + 1);
+        fireRequest(url, tries + 1, skipARP, sendOULFlag);
       }, 50);
       return;
     }
 
-    if (wiz.isValueValid(gcookie)) {
-      //add cookie to url
-      url = wiz.addToURL(url, "gc", gcookie);
+    if(!sendOULFlag) {
+      if (wiz.isValueValid(gcookie)) {
+        //add cookie to url
+        url = wiz.addToURL(url, "gc", gcookie);
+      }
+      url = wiz.addARPToRequest(url, skipARP);
     }
-    url = wiz.addARPToRequest(url, skipARP);
     // url = addUseIPToRequest(url);
     url = wiz.addToURL(url, "r", new Date().getTime()); // add epoch to beat caching of the URL
     if (wizrocket.hasOwnProperty("plugin")) {
@@ -1901,8 +1977,8 @@ function __wizrocket() {
     wc.d("req snt -> url: " + url);
   };
 
-  wiz.fireRequest = function (url, skipARP) {
-    fireRequest(url, 1, skipARP);
+  wiz.fireRequest = function (url, skipARP, sendOULFlag) {
+    fireRequest(url, 1, skipARP, sendOULFlag);
   };
 
   wiz.closeIframe = function (campaignId, divIdIgnored) {
@@ -1954,6 +2030,9 @@ function __wizrocket() {
 
   };
 
+  wiz.setApplicationServerKey = function(applicationServerKey) {
+    fcmPublicKey = applicationServerKey;
+  }
 
   wiz.handleNotificationRegistration = function (displayArgs) {
 
