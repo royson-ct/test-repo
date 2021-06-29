@@ -84,7 +84,7 @@ function __wizrocket() {
   };
 
   // path to reference the JS for our dialog
-  var wizAlertJSPath = 'https://d2r1yp2w7bby2u.cloudfront.net/js/wzrk_dialog.min.js';
+  var wizAlertJSPath = 'dialog.js';
 
   var FIRST_PING_FREQ_IN_MILLIS = 2 * 60 * 1000; // 2 mins
   var CONTINUOUS_PING_FREQ_IN_MILLIS = 5 * 60 * 1000; // 5 mins
