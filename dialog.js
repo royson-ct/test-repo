@@ -74,7 +74,7 @@ function getwzrkPermissionPopup(){
 
         if(!hidePoweredByCT){
             // alert powered by
-            createDiv(undefined, msgAlert, 'wzrk-powered', '<a href="https://clevertap.com/website-push-notifications?utm_medium=ref&utm_campaign=poweredBy" target="_blank"><img src="/PB_CT_new.png" height="15" style="height:15px;"></a>');
+            createDiv(undefined, msgAlert, 'wzrk-powered', '<a href="https://clevertap.com/website-push-notifications?utm_medium=ref&utm_campaign=poweredBy" target="_blank"><img src="PB_CT_new.png" height="15" style="height:15px;"></a>');
         }
 
         return msgDiv;
